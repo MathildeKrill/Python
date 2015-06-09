@@ -3,9 +3,10 @@
 # placing nothing means concatenation, e.g. ... + 13 14 - ... will mean ... + 1314 - ...
 # find all combinations of (+, -, '') that will yield a given target (100)
 
-import datetime
+import datetime#, cProfile
 
 targetTotalGLOBAL = 100
+signsQtyGLOBAL = 15
 combinationNumberGLOBAL = 0
 combinationsEvaluatedGLOBAL = 0
     
@@ -97,8 +98,35 @@ def embeddedLoopsFixed():
                                                             for s15 in possibleSigns:
                                                                 signs[14] = s15 
                                                                 printIfTargetHit(signs)
+
+def triadicIteractionGranular(signsQty = signsQtyGLOBAL):
+    signs = [None for _ in range(signsQty)]
+    comb = int(3**signsQty-1)
+
+    def calSigns(combCopy):
+        for n in xrange(signsQty):
+            signs[n] = 1-combCopy%3 # [0,1,2] -> [1,0,-1], correct range for signs
+            combCopy = combCopy//3
+
+    while (comb >= 0):
+        calSigns(comb)
+        printIfTargetHit(signs)
+        comb = comb - 1
+        
+def triadicIteractionGranular2(signsQty = signsQtyGLOBAL):
+    indices = xrange(signsQty)
+    signs = [None for _ in indices]
+    def numberToArray(num):
+        for n in indices:
+            signs[n] = 1-num%3 # [0,1,2] -> [1,0,-1], correct range for signs
+            num = num//3    
+    comb = int(3**signsQty-1)
+    while (comb >= 0):
+        numberToArray(num = comb)
+        printIfTargetHit(signs)
+        comb = comb - 1
                                     
-def triadicIteraction(signsQty):
+def triadicIteraction(signsQty = signsQtyGLOBAL):
     signs = [None for _ in range(signsQty)]
     comb = int(3**signsQty-1)
     while (comb >= 0):
@@ -109,7 +137,7 @@ def triadicIteraction(signsQty):
         printIfTargetHit(signs)
         comb = comb - 1
         
-def recursiveIteration(signsQty):
+def recursiveIteration(signsQty = signsQtyGLOBAL):
     def recursiveIterationInner(signs, newSign, currentOrder):
         if (currentOrder >= 0):
             signs[currentOrder] = newSign
@@ -121,8 +149,9 @@ def recursiveIteration(signsQty):
             recursiveIterationInner(signs, 1, currentOrder+1)
     recursiveIterationInner(signs = [None for _ in range(signsQty)], newSign = None, currentOrder = -1)
     
-def runCombinationCheckingMethod(fun, args, kwargs = {}):    
+def runCombinationCheckingMethod(fun, args=[], kwargs = {}):    
     nowGlobal = datetime.datetime.now()
+    #cProfile.run(fun+'()')#
     fun(*args, **kwargs)
     print 'Method name: ' + str(fun)
     combinationNumber(flash = True)
@@ -130,18 +159,30 @@ def runCombinationCheckingMethod(fun, args, kwargs = {}):
     print "Time elapsed : " + str(timeSpan)
             
 if __name__ == '__main__':
-    runCombinationCheckingMethod(embeddedLoopsFixed, (), {})
-    runCombinationCheckingMethod(recursiveIteration, [], {'signsQty' : 15})
-    runCombinationCheckingMethod(triadicIteraction, [], {'signsQty' : 15})
+    runCombinationCheckingMethod(triadicIteractionGranular)
+    runCombinationCheckingMethod(triadicIteractionGranular2)
+    runCombinationCheckingMethod(embeddedLoopsFixed)
+    runCombinationCheckingMethod(recursiveIteration)
+    runCombinationCheckingMethod(triadicIteraction)
     
     # OUTPUT (my machine is quite weak)
-#     Method name: <function embeddedLoopsFixed at 0x01DE3C70>
+#     Method name: <function triadicIteractionGranular at 0x01D93EF0>
 #     Combination quantity : 16560
-#     Time elapsed : 0:01:27.489000
-#     Method name: <function recursiveIteration at 0x01DE3D70>
+#     Combinations evaluated : 14348907
+#     Time elapsed : 0:03:42.526000
+#     Method name: <function triadicIteractionGranular2 at 0x01D93EB0>
 #     Combination quantity : 16560
-#     Time elapsed : 0:01:40.458000
-#     Method name: <function triadicIteraction at 0x01DE3CB0>
+#     Combinations evaluated : 14348907
+#     Time elapsed : 0:04:19.259000
+#     Method name: <function embeddedLoopsFixed at 0x01D93DB0>
 #     Combination quantity : 16560
-#     Time elapsed : 0:03:08.165000
-    
+#     Combinations evaluated : 14348907
+#     Time elapsed : 0:02:21.446000
+#     Method name: <function recursiveIteration at 0x01D93CB0>
+#     Combination quantity : 16560
+#     Combinations evaluated : 14348907
+#     Time elapsed : 0:02:07.997000
+#     Method name: <function triadicIteraction at 0x01D93BF0>
+#     Combination quantity : 16560
+#     Combinations evaluated : 14348907
+#     Time elapsed : 0:03:42.229000
