@@ -149,6 +149,22 @@ def recursiveIteration(signsQty = signsQtyGLOBAL):
             recursiveIterationInner(signs, 1, currentOrder+1)
     recursiveIterationInner(signs = [None for _ in range(signsQty)], newSign = None, currentOrder = -1)
     
+def triadicIteractionFirstPrinciple(signsQty = signsQtyGLOBAL):
+    signs = [-1 for _ in range(signsQty)]
+    comb = int(3**signsQty-1)
+
+    def addOne(idx=0):
+        if signs[idx] < 1:
+            signs[idx] += 1
+        else:
+            signs[idx] = -1
+            addOne(idx+1)
+
+    while (comb >= 0):
+        printIfTargetHit(signs)
+        if comb > 0: addOne()
+        comb = comb - 1    
+    
 def runCombinationCheckingMethod(fun, args=[], kwargs = {}):    
     nowGlobal = datetime.datetime.now()
     #cProfile.run(fun+'()')#
@@ -159,9 +175,10 @@ def runCombinationCheckingMethod(fun, args=[], kwargs = {}):
     print "Time elapsed : " + str(timeSpan)
             
 if __name__ == '__main__':
+    runCombinationCheckingMethod(triadicIteractionFirstPrinciple)
+    runCombinationCheckingMethod(embeddedLoopsFixed)
     runCombinationCheckingMethod(triadicIteractionGranular)
     runCombinationCheckingMethod(triadicIteractionGranular2)
-    runCombinationCheckingMethod(embeddedLoopsFixed)
     runCombinationCheckingMethod(recursiveIteration)
     runCombinationCheckingMethod(triadicIteraction)
     
