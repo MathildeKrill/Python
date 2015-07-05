@@ -56,8 +56,10 @@ def mergeSortedLists(list1, list2):
         if (i1 < len(list1)) and (i2 < len(list2)):
             if (list1[i1] < list2[i2]):
                 result.append(list1[i1]); i1 = i1+1
-            else: 
+            elif (list1[i1] > list2[i2]): 
                 result.append(list2[i2]); i2 = i2+1
+            else:
+                result.append(list2[i2]); i1 = i1+1; i2 = i2+1
         elif (i1 < len(list1)):
             result.append(list1[i1]); i1 = i1+1
         elif (i2 < len(list2)):
@@ -148,7 +150,7 @@ def findChain(leftWord, rightWord):
 
 
 if __name__ == '__main__':
-    halfChains = findChain("man", "air")
+    halfChains = findChain("man", "spa")
     for h1, h2 in halfChains:
         c = h1.reversePath() + [h1.word] + h2.path
         print c
