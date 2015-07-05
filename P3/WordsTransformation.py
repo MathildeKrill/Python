@@ -151,6 +151,9 @@ def findChain(leftWord, rightWord, maxTreeDepth):
 
 
 if __name__ == '__main__':
+    allPaths = findChain("rough", "poach", 10)
+    for p in allPaths:
+        print p
     allPaths = findChain("man", "spa", 10)
     for p in allPaths:
         print p
