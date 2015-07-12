@@ -1,47 +1,64 @@
 import random
 
   
-# shuffle integers from 0 to upper_limit - 1      
-def shuffle(upper_limit):
-    unshuffled_numbers = range(upper_limit) 
-    result = []
-    while unshuffled_numbers:
-        next_elem = random.randint(0, len(unshuffled_numbers) - 1)
-        result.append(unshuffled_numbers[next_elem])
-        del unshuffled_numbers[next_elem]
+# shuffle integers from lower_limit to upper_limit - 1      
+def shuffle(upper_limit, lower_limit = 0):
+    result = range(lower_limit, upper_limit)
+    indx = upper_limit - lower_limit - 1
+    while indx > 0:
+        buffer_ = result[indx]
+        swap_elem_index = random.randint(0, indx)
+        result[indx] = result[swap_elem_index]
+        result[swap_elem_index] = buffer_
+        indx -= 1
     return result 
 
 class Graph:
-    def __init__(self, number_nodes, max_number_edges = 0.5): 
-        if (max_number_edges > 1) or (max_number_edges < 0):
+    def __init__(self, number_nodes, density = 0.5): 
+        if (density > 1) or (density < 0):
             raise ValueError("max_number_edges is out of range")
-        self.nodes_connections = {node_nb : range(node_nb+1, number_nodes) for node_nb in xrange(number_nodes)}
+        self.nodes_connections = {
+            node_nb: shuffle(upper_limit = number_nodes, lower_limit = node_nb+1) 
+                                                for node_nb in range(number_nodes)}
+        for key, value in self.nodes_connections.iteritems():        
+            self.nodes_connections[key] = set(value[:int(density * (number_nodes - key))])
+            
+    def Print(self): 
         for key, value in self.nodes_connections.iteritems():
-            while len(value) > (max_number_edges * (number_nodes - key - 1)):
-                index_to_remove = random.randint(0, len(value)-1)
-                del value[index_to_remove]
-                                
-            new_scheduled_nodes_ids += [key for key, value in self.nodes_connections.iteritems() 
-                                            if (node_id in value) and not (key in visited_nodes_ids or key in scheduled_nodes_ids)] 
-            scheduled_nodes_ids += new_scheduled_nodes_ids 
-            visited_nodes_ids.append(node_id)
-            del scheduled_nodes_ids[0]
-        return visited_nodes_ids
+            print key, value         
+
+    def IterateInBreadth(self, start_node_id):
+        assert start_node_id in self.nodes_connections
+        scheduled_nodes_ids = {start_node_id}
+        visited_nodes_ids = set()
+        while scheduled_nodes_ids:
+            node_id = scheduled_nodes_ids.pop()
+            visited_nodes_ids.add(node_id) 
+            yield node_id
+            for node_id_2 in self.nodes_connections[node_id]: 
+                if not (node_id_2 in visited_nodes_ids or node_id_2 in scheduled_nodes_ids):
+                    scheduled_nodes_ids.add(node_id_2)
+            for key, value in self.nodes_connections.iteritems():
+                if (node_id in value) and not (key in visited_nodes_ids or key in scheduled_nodes_ids):
+                    scheduled_nodes_ids.add(key)
     
     def __IterateInDepth(self, start_node_id, visited_nodes):
-        visited_nodes.append(start_node_id)
+        assert start_node_id in self.nodes_connections
+        visited_nodes.add(start_node_id)
+        yield start_node_id
         for key, value in self.nodes_connections.iteritems():
             if start_node_id in value:
                 if key not in visited_nodes:
-                    self.__IterateInDepth(start_node_id = key, visited_nodes = visited_nodes)
+                    for more_result_nodes in self.__IterateInDepth(start_node_id = key, visited_nodes = visited_nodes):
+                        yield more_result_nodes 
         for value in self.nodes_connections[start_node_id]:
             if value not in visited_nodes:
-                self.__IterateInDepth(start_node_id = value, visited_nodes = visited_nodes)            
-        
+                for more_result_nodes in self.__IterateInDepth(start_node_id = value, visited_nodes = visited_nodes):  
+                    yield more_result_nodes  
+                    
     def IterateInDepth(self, start_node_id):
-        visited_nodes = []
-        self.__IterateInDepth(start_node_id, visited_nodes = visited_nodes)
-        return visited_nodes
+        for x in self.__IterateInDepth(start_node_id = start_node_id, visited_nodes = set() ):
+            yield x          
      
 class BinaryTreeNode:
     def __init__(self, node_id, left_child = None, right_child = None):
@@ -124,38 +141,39 @@ class BinaryTree:
     
     def IterateInBreadth(self):
         if not self.all_nodes:
-            return []
-        visited_nodes_ids = []
-        scheduled_nodes = [self.all_nodes[0]]
-        scheduled_nodes_ids = [self.all_nodes[0].node_id]
+            return
+        visited_nodes_ids = set()
+        scheduled_nodes = {self.all_nodes[0]}
+        scheduled_nodes_ids = {self.all_nodes[0].node_id}
         while scheduled_nodes:
-            if scheduled_nodes[0].left_child:
-                node_id = scheduled_nodes[0].left_child
+            a_node = scheduled_nodes.pop()
+            yield a_node.node_id
+            if a_node.left_child:
+                node_id = a_node.left_child.node_id
                 if not (node_id in scheduled_nodes_ids) and not (node_id in visited_nodes_ids):
-                    scheduled_nodes.append(scheduled_nodes[0].left_child)
-                    scheduled_nodes_ids.append(node_id)
-            if scheduled_nodes[0].right_child:
-                node_id = scheduled_nodes[0].right_child
+                    scheduled_nodes.add(a_node.left_child)
+                    scheduled_nodes_ids.add(node_id)
+            if a_node.right_child:
+                node_id = a_node.right_child.node_id
                 if not (node_id in scheduled_nodes_ids) and not (node_id in visited_nodes_ids):
-                    scheduled_nodes.append(scheduled_nodes[0].right_child)
-                    scheduled_nodes_ids.append(node_id)
-            visited_nodes_ids.append(scheduled_nodes[0].node_id)
-            del scheduled_nodes[0]
-            del scheduled_nodes_ids[0]
-        return visited_nodes_ids
+                    scheduled_nodes.add(a_node.right_child)
+                    scheduled_nodes_ids.add(node_id)
+            visited_nodes_ids.add(a_node.node_id)
+            scheduled_nodes_ids.remove(a_node.node_id)
 
     def __IterateInDepth(self, root):
-        if not root:
-            return []
-        result = [root.node_id]
-        result += self.__IterateInDepth(root.left_child)
-        result += self.__IterateInDepth(root.right_child)
-        return result
+        yield root.node_id
+        if root.left_child:
+            for node_id in self.__IterateInDepth(root.left_child):
+                yield node_id
+        if root.right_child:
+            for node_id in self.__IterateInDepth(root.right_child):
+                yield node_id
     
     def IterateInDepth(self):
         if self.all_nodes:
-            return self.__IterateInDepth(self.all_nodes[0])
-        return []
+            for node_id in self.__IterateInDepth(self.all_nodes[0]):
+                yield node_id       
     
     def DeepestCommonAncestor(self, node_id_1, node_id_2):
         if self.all_nodes:
@@ -181,16 +199,16 @@ class BinaryTree:
             return right_ancestor
 
 if __name__ == '__main__':
-    #random.seed(1000)
-    tree = BinaryTree(nodes_qty = 15, shuffle_node_ids = False, tree_type = "balanced")#"rightChildIsChildless")#
+    random.seed(1000)
+    tree = BinaryTree(nodes_qty = 15, shuffle_node_ids = False, tree_type = "rightChildIsChildless")#"balanced")#
     tree.Print()
-    x = tree.IterateInBreadth(); print x # x.sort(); 
-    x = tree.IterateInDepth(); print x # x.sort(); 
+    print [x for x in tree.IterateInBreadth()] 
+    print [x for x in tree.IterateInDepth()]
     print tree.DeepestCommonAncestor(8, 14).node_id
     
-    g = Graph(number_nodes = 11, max_number_edges = 0.33)
+    g = Graph(number_nodes = 11, density = 0.33)
     g.Print()
-    print g.IterateInBreadth(8)
-    print g.IterateInBreadth(0)
-    print g.IterateInDepth(8)
-    print g.IterateInDepth(0)
+    print [x for x in g.IterateInBreadth(8)]
+    print [x for x in g.IterateInBreadth(0)]
+    print [x for x in g.IterateInDepth(8)]
+    print [x for x in g.IterateInDepth(0)]
