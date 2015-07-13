@@ -1,6 +1,8 @@
 import random
 
 class WeightedGraph:
+    # constructor randomley generates a graph, 
+    # given the number of vertice, min and max number of vertice from each vertex
     def __init__(self, number_vertice, 
                  min_edges_per_vertice, 
                  max_edges_per_vertice, 
@@ -9,23 +11,31 @@ class WeightedGraph:
         assert min_edges_per_vertice >= 0
         assert max_edges_per_vertice < number_vertice 
         assert min_edges_per_vertice <= max_edges_per_vertice 
-        if negative_weights_allowed:
-            self.edges_per_vertice = [[(v, 2*random.random()-1) for v in range(number_vertice)] for _ in range(number_vertice)]
-        else:
-            self.edges_per_vertice = [[(v, random.random()) for v in range(number_vertice)] for _ in range(number_vertice)]
-        counter = -1
-        for edge_per_vertice in self.edges_per_vertice:
-            counter += 1
-            # to make sure there are no self loops, replace it by the end of the list 
-            edge_per_vertice[counter] = edge_per_vertice[-1] 
+
+        self.edges_per_vertice = [[] for _ in xrange(number_vertice)]
+        for vertex_from in xrange(number_vertice):
             number_of_edges = random.randint(min_edges_per_vertice, max_edges_per_vertice)
-            for nb_e in range(number_of_edges):
-                buffer_ = edge_per_vertice[nb_e]
-                swap_element_nb = random.randint(nb_e, number_vertice-2)
-                edge_per_vertice[nb_e] = edge_per_vertice[swap_element_nb]
-                edge_per_vertice[swap_element_nb] =  buffer_
-            del  edge_per_vertice[number_of_edges:]
-            edge_per_vertice.sort(key = lambda e: e[0])
+            # to make sure there are no self loops, 
+            # sample ends < counter and ends > counter separately
+            qty_edges_before = int(round(number_of_edges * vertex_from / number_vertice))
+            if qty_edges_before > number_of_edges:
+                qty_edges_before = number_of_edges 
+            if qty_edges_before >= vertex_from:
+                qty_edges_before = vertex_from
+            if (number_of_edges-qty_edges_before) >= (number_vertice - vertex_from - 1):
+                qty_edges_before = number_of_edges + vertex_from - number_vertice + 1
+                                
+            vertice_to = []
+            if qty_edges_before > 0:
+                vertice_to += random.sample(xrange(vertex_from), qty_edges_before) 
+            if qty_edges_before < number_of_edges:
+                vertice_to += random.sample(xrange(vertex_from+1, number_vertice), number_of_edges-qty_edges_before)
+                
+            if negative_weights_allowed:
+                self.edges_per_vertice[vertex_from] = [(v, 2*random.random()-1) for v in vertice_to]                
+            else:
+                self.edges_per_vertice[vertex_from] = [(v, random.random()) for v in vertice_to]
+            self.edges_per_vertice[vertex_from].sort(key = lambda x:x[0]) 
             
     def Print(self):
         vertex = -1
