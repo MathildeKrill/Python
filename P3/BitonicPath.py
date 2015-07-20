@@ -2,11 +2,12 @@ import math
 # see https://en.wikipedia.org/wiki/Bitonic_tour for the statement of the problem
 
 # this class contains all distances between vertices
-class Distances:
+class Distances(object):
     def __init__(self, vertice): 
         # avoid altering input
         sorted_indices = range(len(vertice))
         sorted_indices.sort(key = lambda index_:vertice[index_][0])
+        # compute each distance twice, but much simpler code
         self.__distances = [[math.sqrt((vertice[i][0]-vertice[j][0])**2 + (vertice[i][1]-vertice[j][1])**2)
                                                 for i in sorted_indices] for j in sorted_indices]
        
@@ -16,7 +17,7 @@ class Distances:
 # this class contains information about two partial paths. 
 # For each path, it know the sequence of vertices and total length
 # It stores an instance of distances to avoid passing it as a parameter
-class TwoPartialPaths:
+class TwoPartialPaths(object):
     def __init__(self, path_to_rightmost, distance_to_rightmost, 
                        path_to_another_extreme, distance_to_another_extreme, distances):
         self.path_to_rightmost = path_to_rightmost
@@ -25,12 +26,11 @@ class TwoPartialPaths:
         self.distance_to_another_extreme = distance_to_another_extreme
         self.distances = distances
         
-    def print_out(self):
-        print "path 1 is", self.path_to_rightmost
-        print "distance 1 is", self.distance_to_rightmost
-        print "path 2 is", self.path_to_another_extreme
-        print "distance 2 is", self.distance_to_another_extreme
-        print "overall distance", self.get_total_distance()
+    def __str__(self):
+        result = "path 1 is {}\ndistance 1 is {}\npath 2 is {}\ndistance 2 is {}\noverall distance is {}".\
+            format(self.path_to_rightmost, self.distance_to_rightmost, self.path_to_another_extreme,
+                   self.distance_to_another_extreme, self.get_total_distance())
+        return result
         
     def add_to_rightmost(self):
         new_vertex = self.path_to_rightmost[-1] + 1
@@ -107,4 +107,4 @@ if __name__ == '__main__':
     for v in vertice:
         print v
     result = find_bitonic_path(vertice = vertice)
-    result.print_out()
+    print result
