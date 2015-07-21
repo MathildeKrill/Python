@@ -19,8 +19,8 @@ class Vertice(object):
                                                                         for i in xrange(len(vertice_coordinates)-1)]
        
     def get_distance(self, ind_original_1, ind_original_2):
-        return math.sqrt((self.__vertice_coordinates[ind_original_1][0]-self.__vertice_coordinates[ind_original_2][0])**2 + 
-                         (self.__vertice_coordinates[ind_original_1][1]-self.__vertice_coordinates[ind_original_2][1])**2)
+        return math.sqrt((self.__vertice_coordinates[ind_original_1][0] - self.__vertice_coordinates[ind_original_2][0])**2 + 
+                         (self.__vertice_coordinates[ind_original_1][1] - self.__vertice_coordinates[ind_original_2][1])**2)
      
     # given an index in the original array, find next to the right and output it and the distance between the two   
     def find_next_to_the_right_and_distance(self, ind_original):
