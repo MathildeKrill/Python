@@ -9,6 +9,7 @@ and the last digit is moved in front of the number, it increases factor-fold
 
 from decimal import Decimal
 import decimal 
+import sys
 
 MAX_POWER = 100
 MAX_ERROR = 1E-16
@@ -17,40 +18,51 @@ def _is_not_0(error):
     return (error > MAX_ERROR) or (error < (-MAX_ERROR))
 
 def _print_int(name_of_i, i):
-    return name_of_i + ' = ' + ('{:' +str(MAX_POWER + 2) + '.0f}').format(i)
+    print(name_of_i + ' = ' + ('{:' + str(MAX_POWER + 2) + '.0f}').format(i))
 
-def find_a_b(base, factor, pow):
-    _a = Decimal(Decimal(pow - factor)/Decimal(base * factor - Decimal(1)))
+def find_a_b(base, factor, pow, errors):
+    _base = Decimal(base)
+    _factor = Decimal(factor)
+    _a = Decimal(Decimal(pow - _factor)/Decimal(_base * _factor - Decimal(1)))
     a_error = _a - _a.quantize(Decimal(1.0)); # non-integer part
     if _is_not_0(error = a_error):
-        print 'ERROR WITH ' + _print_int('pow', pow) + _print_int('factor', factor) + _print_int('base', base)
+        print('ERROR WITH ' + _print_int('pow', pow) + _print_int('factor', factor) + _print_int('base', base))
     a = Decimal(0)
     b = Decimal(0)
     for _ in range(1, base):
         b += Decimal(1)
         a += _a
-        ab = Decimal(a * base + b)
+        ab = Decimal(a * _base + b)
         ba = Decimal(a + pow * b)
-        error = Decimal(ba - factor * ab)
+        error = Decimal(ba - _factor * ab)
         if a >= pow : # should never happen
-            print 'ERROR overflow WITH ' + _print_int('a', a) + _print_int('b', b) + _print_int('pow', pow)
+            errors.append('ERROR overflow WITH ' + _print_int('a', a) + _print_int('b', b) + _print_int('pow', pow))
         if _is_not_0(error):  # should never happen
-            print 'ERROR WITH ' + _print_int('a', a) + _print_int('b', b) + _print_int('ba - factor * ab', error)
-#         print _print_float('a', a) 
-#         for k, v in {'b' : b, 'ab' : ab, 'ba' : ba}.items():
-#             print  _print_int(k, v)
+            errors.append('ERROR WITH ' + _print_int('a', a) + _print_int('b', b) + _print_int('ba - factor * ab', error))
+        _print_int('a', a) 
+        for k, v in {'b' : b, 'ab' : ab, 'ba' : ba}.items():
+            _print_int(k, v)
 
 if __name__ == '__main__':
-    base = Decimal(10)
-    factor = Decimal(2)
+    
+    print(sys.version)
+    
+    base = 10
+    factor = 2
     
     pow = Decimal(1)
     decimal.getcontext().prec = MAX_POWER + 2
     res_so_far = 1
+    errors = []
+    print 
     for i in range(MAX_POWER):
         if res_so_far == factor:
-            print 'POWER = ' + str(i)
-            find_a_b(base = base, factor = factor, pow = pow)
+            print('POWER = ' + str(i))
+            find_a_b(base = base, factor = factor, pow = pow, errors = errors)
         res_so_far = (res_so_far * base) % (base * factor -1)
         pow *= base
+    if len(errors):
+        print("ERRORS:")
+    for e in errors:
+        print(e)
     
