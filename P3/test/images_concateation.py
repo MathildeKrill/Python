@@ -54,7 +54,17 @@ def crop_concatenate_resize(urls, filename, cropped_size, final_width):
         # cv2.waitKey(0)
 
 if __name__ == '__main__':
-    mfas = [[900, "http://mfas3.s3.amazonaws.com/objects/SC246818.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246819.jpg", "stater-of-taras-tarentum-with-horse-and-rider-struck-under-philokles-955"], 
+    mfas = [# [950, "http://mfas3.s3.amazonaws.com/objects/SC246818.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246819.jpg", "stater-of-taras-tarentum-with-horse-and-rider-struck-under-philokles-955"], 
+            [950, "http://mfas3.s3.amazonaws.com/objects/SC246826.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246827.jpg", "stater-of-taras-tarentum-with-horse-and-rider-struck-under-aristokles-960"], 
+            # [950, "http://mfas3.s3.amazonaws.com/objects/SC246810.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246811.jpg", "stater-of-taras-tarentum-with-horse-and-rider-951"], 
+            # [950, "http://mfas3.s3.amazonaws.com/objects/SC246382.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246383.jpg", "stater-of-taras-tarentum-with-rider-vaulting-from-horse-942"], 
+            # [950, "http://mfas3.s3.amazonaws.com/objects/SC246384.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246385.jpg", "stater-of-taras-tarentum-with-rider-vaulting-from-horse-943"], 
+            # [950, "http://mfas3.s3.amazonaws.com/objects/SC246802.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246803.jpg", "stater-of-taras-tarentum-with-warrior-on-horseback-crowned-by-victory-struck-under-kallikrates-885"], 
+            # [850, "http://mfas3.s3.amazonaws.com/objects/SC255772.jpg", "http://mfas3.s3.amazonaws.com/objects/SC255773.jpg", "stater-of-kelenderis-with-youth-riding-horse-2761"], 
+            # [850, "http://mfas3.s3.amazonaws.com/objects/SC251597.jpg", "http://mfas3.s3.amazonaws.com/objects/SC251598.jpg", "drachm-of-aspendos-with-horseman-hurling-spear-3297"], 
+            # [800, "http://mfas3.s3.amazonaws.com/objects/SC253370.jpg", "http://mfas3.s3.amazonaws.com/objects/SC253371.jpg", "stater-of-kyzikos-with-horse-and-rider-above-tunny-fish-3299"], 
+            [950, "http://mfas3.s3.amazonaws.com/objects/SC246411.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246410.jpg", "nommos-of-taras-tarentum-with-horse-and-rider-2945"], 
+            # [950, "", "", ""], 
             ]
 
     for mfa in mfas:
