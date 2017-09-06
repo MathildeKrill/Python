@@ -8,10 +8,6 @@ from os import listdir
 from os.path import isfile, expanduser
 import codecs, shutil, os.path, string, re
 
-def get_file_as_list(file_path):
-    with codecs.open(file_path, encoding='utf-8') as file_opened:
-        file_content_list = file_opened.readlines()
-    return file_content_list
 
 def remove_path(line):
     return line.replace("] http://www.yu51a5.com/wp-content/uploads/", "]")
@@ -32,46 +28,71 @@ def replace_special_characters(line):
     line = "[yu_h a=\"" + name_a + "\"]" + line[:-1] + "[/yu_h]\n"
     return line
 
-def modify_file_by_line(file_path, modif_func):
-    file_content_list = get_file_as_list(file_path = file_path)
-    
-    for nb_line in range(len(file_content_list)):
-        file_content_list[nb_line] = modif_func(line = file_content_list[nb_line])
-            
-    with codecs.open(file_path, 'w', encoding='utf-8') as the_file:
-        the_file.writelines(file_content_list)
-        
 def get_filenames(dir_path):
     files_or_directories = [f_or_d for f_or_d in listdir(dir_path) if not f_or_d.startswith('.')]
     only_files = [f.lower() for f in files_or_directories if isfile(os.path.join(dir_path, f))]
     only_directories = [d.lower() for d in files_or_directories if os.path.isdir(os.path.join(dir_path, d))]
     return only_directories, only_files
 
+# recursively do something
+def run_function_recursively(dir_path, recursive_func, **kwargs):
+    directories, _ = get_filenames(dir_path = dir_path)
+    recursive_func(dir_path = dir_path, **kwargs)
+    for sub_dir_path in directories:
+        recursive_func(dir_path = os.path.join(dir_path, sub_dir_path), **kwargs)
+
+# do something on all files of a directory
+def do_on_all_files(dir_path, file_func, **kwargs):
+    _, filenames = get_filenames(dir_path = dir_path)
+    for filename in filenames:
+        file_func(file_path = os.path.join(dir_path, filename), **kwargs)  
+        
+# recursively do something
+def run_function_recursively_on_files(dir_path, recursive_func_for_files, **kwargs):
+    def recursive_func(dir_path, **kwargs):
+        do_on_all_files(dir_path = dir_path, file_func = recursive_func_for_files, **kwargs)
+        
+    run_function_recursively(dir_path = dir_path, recursive_func = recursive_func, **kwargs)
+    
+# do something on all lines of a file
+my_encoding = 'utf-8'
+def do_on_all_lines(file_path, line_func, **kwargs):
+    
+    with codecs.open(file_path, encoding = my_encoding) as file_opened:
+        file_content_list = file_opened.readlines()
+    
+    for nb_line in range(len(file_content_list)):
+        result_per_line = line_func(line = file_content_list[nb_line], **kwargs)
+        if result_per_line is not None:
+            file_content_list[nb_line] = result_per_line
+            
+    with codecs.open(file_path, 'w', encoding = my_encoding) as the_file:
+        the_file.writelines(file_content_list)
+ 
+# recursively do something on all lines of all files of a directory
+def run_function_recursively_on_lines(dir_path, recursive_func_for_lines, **kwargs):
+    def recursive_func(file_path, **kwargs):
+        do_on_all_lines(file_path = file_path, line_func = recursive_func_for_lines, **kwargs)
+        
+    run_function_recursively_on_files(dir_path = dir_path, recursive_func_for_files = recursive_func, **kwargs)    
+
 def get_file_extension(filename):
     _, file_extension = os.path.splitext(filename)
     return file_extension
 
-# recursively get all file extensions
-def get_all_filenames(dir_path):
-    directories, filenames = get_filenames(dir_path = dir_path)
-    filename_array = [f for f in filenames]
-    filename_array_with_dirs = [os.path.join(dir_path, f) for f in filenames]
-    file_stats = [os.stat(f) for f in filename_array_with_dirs]
-    for sub_dir_path in directories:
-        sub_dir_path_full = os.path.join(dir_path, sub_dir_path)
-        subfolder_all_filenames, subfolder_all_filenames_with_dirs, subfolder_file_stats = get_all_filenames(dir_path = sub_dir_path_full)
-        filename_array += [f for f in subfolder_all_filenames]
-        filename_array_with_dirs += [f for f in subfolder_all_filenames_with_dirs]
-        file_stats += [f for f in subfolder_file_stats]
-    return filename_array, filename_array_with_dirs, file_stats
+# get file info
+def get_file_info(file_path, filename_array, filename_array_with_dirs, file_stats):
+    filename_array += [os.path.basename(file_path)]
+    filename_array_with_dirs += [file_path]
+    file_stats += [os.stat(file_path)]
 
 # recursively get all file extensions
 def get_all_extensions(dir_path):
-    directories, filenames = get_filenames(dir_path = dir_path)
-    all_extensions = set(get_file_extension(filename) for filename in filenames)
-    for sub_dir_path in directories:
-        subfolder_all_extensions = get_all_extensions(dir_path = os.path.join(dir_path,sub_dir_path))
-        all_extensions.update(subfolder_all_extensions)
+    def add_file_extensions(file_path, all_extensions):
+        all_extensions.add(get_file_extension(filename = file_path))
+
+    all_extensions = set()
+    run_function_recursively_on_files(dir_path = dir_path, recursive_func_for_files = add_file_extensions, all_extensions = all_extensions)
     return all_extensions
 
 # recursively get all useful and redundant files
@@ -117,22 +138,18 @@ def remove_path_before(key_word, path_to_clean):
     s = path_to_clean.find(key_word)
     return path_to_clean[s + len(key_word):]
 
-if __name__ == '__main__':
-       
-    file_path = expanduser('~/Documents/Sites/wordpress-yu51a5/horsemen.txt')
-    file_content_list = get_file_as_list(file_path = file_path)        
-    file_content = "".join(file_content_list)
-    
-    dir_path = expanduser('~/Documents/Sites/Pages/uploads/')
-#     filenames_to_delete = get_all_redundant_files(dir_path)
-#     for e in filenames_to_delete:
-#         os.remove(e)
-#     print(len(filenames_to_delete))
-    filename_array, filename_array_with_dirs, file_stats = get_all_filenames(dir_path = dir_path)
+def find_files_with_identicaln_names_in_different_folders(dir_path):
+    filename_array = []; filename_array_with_dirs = []; file_stats = [];
+    run_function_recursively_on_files(dir_path = dir_path, 
+                                      recursive_func_for_files = get_file_info,
+                                      filename_array = filename_array, 
+                                      filename_array_with_dirs = filename_array_with_dirs, 
+                                      file_stats = file_stats)
+
     filename_array_all = zip(filename_array, filename_array_with_dirs, file_stats)
-    filename_array_all = [f for f in filename_array_all]
-    print(type(filename_array_all))
+    filename_array_all = [f for f in filename_array_all]    
     filename_array_all.sort(key = lambda f:f[0])
+    
     look_for = []
     for i in range(len(filename_array_all) - 1):
         if (filename_array_all[i][0] == filename_array_all[i + 1][0]):
@@ -147,16 +164,51 @@ if __name__ == '__main__':
             str = "not " + str
             print (str)
             
+def count_occurances(line, counts):
+    for key in counts.keys():
+        counts[key] += line.count(key)
         
+def replace_substr(line, old_substr, new_substr):
+    result = line.replace(old_substr, new_substr)
+    return result
 
-#     # how many images
-#     print(file_content.count("[yu_image"))
-#     print(file_content.count("[yu_caption"))
+def print_if_found(line, substring):
+    if substring in line:
+        print(line)
+
+if __name__ == '__main__':
+       
+    file_path = expanduser('~/Documents/Sites/wordpress-yu51a5/horsemen.txt')
+    
+#     dir_path = expanduser('~/Documents/Sites/Pages/uploads copy/')
+#     exts = get_all_extensions(dir_path = dir_path)
+#     for e in exts:
+#         print(e)
+#         
+#     filename_array = []; filename_array_with_dirs = []; file_stats = [];
+#     run_function_recursively_on_files(dir_path = dir_path, 
+#                                       recursive_func_for_files = get_file_info,
+#                                       filename_array = filename_array, 
+#                                       filename_array_with_dirs = filename_array_with_dirs, 
+#                                       file_stats = file_stats)
+#     for s in file_stats:
+#         print(s)
+        
+#     filenames_to_delete = get_all_redundant_files(dir_path)
+#     for e in filenames_to_delete:
+#         os.remove(e)
+#     print(len(filenames_to_delete))
+
+    dir_path = expanduser('~/Documents/Sites/wordpress-yu51a5/')
+    # run_function_recursively_on_lines(dir_path = dir_path, recursive_func_for_lines = replace_substr, old_substr = "http://www.yu51a5.com/wp-content/uploads/durers-rhino1.jpg", new_substr = "durers-rhino1.jpg")
+    run_function_recursively_on_lines(dir_path = dir_path, recursive_func_for_lines = print_if_found, substring = "??")
+    print("done")
+        
 #     
 #     # move used images
 #     images_path = expanduser('~/Downloads/')
 #     only_files = [f.lower() for f in listdir(images_path) if isfile(os.path.join(images_path, f))]
-#     only_image_files = [f for f in only_files if (f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.png'))]
+#     only_image_files = [f for f in only_files if (f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.png') or f.endswith('.gif'))]
 # 
 #     new_images_folder = expanduser('~/Desktop/Used wordpress files/')        
 #     files_found = [filename for filename in only_image_files if "/" + filename + "[" in file_content]
