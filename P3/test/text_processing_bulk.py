@@ -44,6 +44,12 @@ FILENAME = None
 
 def get_FILENAME():
     return FILENAME
+
+def append_to_file(file_path, new_lines):
+    with codecs.open(file_path, encoding = my_encoding) as file_opened:
+        file_content_list = file_opened.readlines()
+    with codecs.open(file_path, 'w', encoding = my_encoding) as the_file:
+        the_file.writelines(file_content_list + new_lines)
         
 def do_on_all_lines(file_path, line_func, **kwargs):
     global FILENAME
@@ -59,8 +65,11 @@ def do_on_all_lines(file_path, line_func, **kwargs):
         with codecs.open(file_path, 'w', encoding = my_encoding) as the_file:
             the_file.writelines(file_content_list)
     else:
-        one_line = "".join(file_content_list)
-        line_func(line = one_line, **kwargs)
+        one_line_ = "".join(file_content_list)
+        result = line_func(line = one_line_, **kwargs)
+        if result is not None:
+            with codecs.open(file_path, 'w', encoding = my_encoding) as the_file:
+                the_file.writelines([result])
     FILENAME = None
  
 # recursively do something on all lines of all files of a directory

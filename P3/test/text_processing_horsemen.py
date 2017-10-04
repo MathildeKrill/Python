@@ -7,7 +7,7 @@ Created on 7 Aug 2017
 from os import listdir
 from os.path import isfile, expanduser
 import codecs, shutil, os.path, string, re, collections
-from text_processing_bulk import run_function_recursively_on_lines, get_filenames, do_on_all_lines, get_FILENAME
+from text_processing_bulk import run_function_recursively_on_lines, get_filenames, do_on_all_lines, get_FILENAME, append_to_file
 
 
 allowed_chars=string.ascii_letters + string.digits+"_"
@@ -118,7 +118,7 @@ def count_occurances(line, counts):
     for key in counts.keys():
         counts[key] += line.count(key)
         
-def replace_substr(line, old_substr, new_substr):
+def replace_substr(line, old_substr, new_substr, one_line = None):
     result = line.replace(old_substr, new_substr)
     return result
 
@@ -172,6 +172,8 @@ def return_all_images(line, result, one_line = None):
         _detailed_result['page_name'] = os.path.basename(get_FILENAME())[:-4]
         if _detailed_result['folder_name'] is None:
             _detailed_result['folder_name'] = _detailed_result['page_name']
+        _detailed_result['new_all'] = ("[yu_image_DB" + _detailed_result['params_replaced'] + "]" 
+                                                + _detailed_result['filename'] + "[/yu_image_DB]").replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace(' ]', ']')
         result.append(_detailed_result)
             
         
@@ -190,13 +192,37 @@ def sort_count_occurances(a_list):
         
     return result_dict
 
+def params_to_php(im):
+    params = [im['folder_name'] + "/" + im['filename']]
+    if im["src"]:
+        params.append(im["src"])
+    else:
+        params.append(im["sourcename"])
+    if im["sourcehrf"]:
+        params.append(im["sourcehrf"])
+    else:
+        params.append(im["id"])
+    if im['caption']:
+        params.append(im['caption'].replace('\n', '<br/>'))
+    else:
+        params.append(None)
+        
+    for j in range(4):
+        if params[j] is None:
+            params[j] = "NULL"
+        else:
+            params[j] = '"' + params[j] + '"';  
+
+    new_php = '    insert_into_images(' + (', \n                            '.join(params))  + ');\n'
+    return new_php
+
 
 if __name__ == '__main__':
        
     file_path = expanduser('~/Documents/Sites/wordpress-yu51a5/horsemen.txt')
     dir_path_wp = expanduser('~/Documents/Sites/wordpress-yu51a5/')
     dir_path_uploads = expanduser('~/Documents/Sites/Pages/uploads/')
-    dir_path_uploads5 = expanduser('~/Documents/Sites/Pages/uploads 5/')
+    functions_images_data = expanduser('~/Documents/Sites/pinboard-child/functions_images_data.php')
     
 #     _, filenames = get_filenames(dir_path = dir_path_uploads5)
 #     _cover = [nu for nu in filenames if ("_cover." in nu)]
@@ -238,7 +264,6 @@ if __name__ == '__main__':
         if (prev_record['filename'] == im['filename']) and (prev_record != im):
             dupe_filenames.add(prev_record['filename'])
         prev_record = im
-    b = "";
     print(dupe_filenames)
      
     errors = []   
@@ -265,31 +290,23 @@ if __name__ == '__main__':
     for a in ah_herf:
         print(a)
     
-    for_php = []    
+    for_php = []
     dont_do = (list(auction_filenames) + list(dupe_filenames))
     for im in images_in_code: 
         if im['filename'] in dont_do:
             continue
-        params = [im['folder_name'] + "/" + im['filename']]
-        if im["src"]:
-            params.append(im["src"])
-        else:
-            params.append(im["sourcename"])
-        if im["sourcehrf"]:
-            params.append(im["sourcehrf"])
-        else:
-            params.append(im["id"])
-        if im['caption']:
-            params.append(im['caption'].replace('\n', '<br/>'))
-
-        new_php = '    insert_into_images(' '"' +  '", \n                            "'.join(p for p in params if p is not None)  + '");'
-        for_php.append(im['all'])
-        for_php.append(im['params'])
-        for_php.append(im['params_replaced'])
+        new_php = params_to_php(im)
         for_php.append(new_php)
+    for im in images_in_code: 
+        if im['filename'] in dont_do:
+            new_php = params_to_php(im)
+            for_php.append(new_php)
+    append_to_file(functions_images_data, for_php)
+    for im in images_in_code:
+        run_function_recursively_on_lines(dir_path = dir_path_wp, recursive_func_for_lines = replace_substr, 
+                                          new_substr = im['new_all'], old_substr = im['all'], one_line = True)
+
         
-    for f in for_php:
-        print(f)
          
 
         
