@@ -56,8 +56,7 @@ def make_short_videos(directory_name, width, height):
         # print(str(audio_piece.duration_seconds))
         counter_audio = counter_audio + 1
         track_name = 'Track ' + str(counter_audio) + ": " + audio_mediainfo['title']
-        descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + track_name + " by " + audio_mediainfo['TCM']]
-        print(descriptions)
+        descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + track_name.replace('\\', '') + " by " + audio_mediainfo['TCM']]
         
         img = Image.open(images_filenames[counter_audio % len(images_filenames)])
         img = img.resize((width, height), Image.ANTIALIAS)
