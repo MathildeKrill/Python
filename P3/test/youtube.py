@@ -69,8 +69,8 @@ def make_short_videos(directory_name, width, height):
 def join_videos(directory_name):
     temp_folder = get_temp_folder(directory_name)
     output_name = os.path.basename(os.path.dirname(directory_name)) 
-    output_video_name = os.path.join(temp_folder, output_name + '.mp4') 
-    output_text_name = os.path.join(temp_folder, output_name + '.txt')
+    output_video_name = os.path.join(directory_name, output_name + '.mp4') 
+    output_text_name = os.path.join(directory_name, output_name + '.txt')
     if os.path.exists(output_video_name):
         os.remove(output_video_name)   
 
@@ -81,10 +81,12 @@ def join_videos(directory_name):
     print(video_filenames)
     write_to_file(file_path = output_text_name, file_content = '\n'.join(video_filenames))
     
-    os.system('ffmpeg -f concat -safe 0 -i "' + output_text_name + '" -c copy "' + output_video_name + '"')     
+    ffmpeg_line = 'ffmpeg -f concat -safe 0 -i "' + output_text_name + '" -c copy "' + output_video_name + '"'
+    print(ffmpeg_line)
+    os.system(ffmpeg_line)     
 
 if __name__ == '__main__':
-    dir_path = os.path.expanduser('~/Music/LouisXIII/')
+    dir_path = os.path.expanduser('~/Music/LouisXIII copy/')
     make_short_videos(dir_path, 1280, 720)
     join_videos(dir_path)
     print("done")
