@@ -3,8 +3,9 @@ Created on 30 Mar 2018
 
 @author: yuliavoevodskaya
 '''
-import cv2, os, pydub, os, codecs, shutil, copy
+import cv2, os, pydub, os, codecs, shutil, datetime
 from pydub import AudioSegment
+from PIL import Image, ImageFont, ImageDraw 
 
 def get_temp_folder(directory_name):
     return os.path.join(directory_name, 'temp2')
@@ -27,13 +28,11 @@ def make_short_videos(directory_name, width, height):
     
     temp_folder = make_temp_dir(directory_name)
 
-    images_filenames =  [os.path.join(directory_name, fn) for fn in os.listdir(directory_name) 
-                            if (fn.endswith('.jpg') or (fn.endswith('.png')))]
+    images_filenames =  [os.path.join(directory_name, fn) for fn in os.listdir(directory_name) if fn.endswith('.jpg')]
     images_filenames.sort()
-    images = [cv2.imread(im_name) for im_name in images_filenames]
-    images = [cv2.resize(img, (width, height)) for img in images]       
-        
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    temp_image_name = os.path.join(temp_folder, os.path.basename(directory_name) + '_temp.jpg') 
+     
+    # audio   
     audio_filenames =  [os.path.join(directory_name, fn) for fn in os.listdir(directory_name) 
                             if fn.endswith('.mp3')]
     audio_filenames.sort()
@@ -41,26 +40,38 @@ def make_short_videos(directory_name, width, height):
     counter_seconds = 0
     
     # create a silent video
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     silent_video_name = os.path.join(temp_folder, os.path.basename(directory_name) + '_silent.mp4')
     video = cv2.VideoWriter(silent_video_name, fourcc, 1.0, (width, height))
+    font = ImageFont.truetype("/System/Library/Fonts/SFNSText.ttf", 32, encoding="unic")               
     
-    #combine mp3s
+    #combine mp3s and descriptions
     audio = AudioSegment.silent(duration = 0)
+    descriptions = []
+    descriptions_file_path = os.path.join(directory_name, os.path.basename(directory_name) + '.txt')
     
     for audio_name in audio_filenames:
-        # print(audio_name)    
         audio_piece = AudioSegment.from_mp3(audio_name)
         audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)       
         # print(str(audio_piece.duration_seconds))
-        img = copy.deepcopy(images[counter_audio % len(images)])
         counter_audio = counter_audio + 1
         track_name = 'Track ' + str(counter_audio) + ": " + audio_mediainfo['title']
-        cv2.putText(img, track_name            , (10,600), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), cv2.LINE_4)       
-        cv2.putText(img, audio_mediainfo['TCM'], (10,700), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), cv2.LINE_4)       
-      
+        descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + track_name + " by " + audio_mediainfo['TCM']]
+        print(descriptions)
+        
+        img = Image.open(images_filenames[counter_audio % len(images_filenames)])
+        img = img.resize((width, height), Image.ANTIALIAS)
+        
+        draw = ImageDraw.Draw(img)        
+        draw.text((10, height -120), track_name            , (0, 0, 255), font=font)
+        draw.text((10, height - 70), audio_mediainfo['TCM'], (0, 0, 255), font=font)
+        
+        img.save(temp_image_name)
+             
+        img2 = cv2.imread(temp_image_name)
         counter_frames = 0
         while (counter_frames < (audio_piece.duration_seconds + 1)):
-            video.write(img) 
+            video.write(img2) 
             counter_frames = counter_frames + 1
             counter_seconds = counter_seconds + 1
             
@@ -70,20 +81,19 @@ def make_short_videos(directory_name, width, height):
                   
     cv2.destroyAllWindows()
     video.release()
-    print('1')
+    print ('\n'.join(descriptions))
+    write_to_file(descriptions_file_path, '/n'.join(descriptions))
+    
     # dump the long mp3
     compilation_audio_name = os.path.join(temp_folder, os.path.basename(directory_name) + '.mp3')
     audio.export(compilation_audio_name, format = "mp3")   
-    print('2')    
+    
     # add audio and remove the intermediate files
     video_name = os.path.join(directory_name, os.path.basename(directory_name) + '.mp4')
-    os.system('ffmpeg -i "' + silent_video_name + '" -i "' + compilation_audio_name + '" -shortest -c:v copy -c:a aac -b:a 256k "' + video_name + '"')
-    os.remove(silent_video_name)
-    os.remove(compilation_audio_name)
-    
+    os.system('ffmpeg -i "' + silent_video_name + '" -i "' + compilation_audio_name + '" -shortest -c:v copy -c:a aac -b:a 256k "' + video_name + '"')   
+       
 
 if __name__ == '__main__':
     dir_path = os.path.expanduser('~/Music/LouisXIII')
     make_short_videos(dir_path, 1280, 720)
-    #join_videos(dir_path)
     print("done")
