@@ -10,7 +10,7 @@ def get_filenames_with_extensions_recursively(directory_name, extensions):
     result = []
     for file_or_directory in os.listdir(directory_name):
         file_or_directory_with_path = os.path.join(directory_name, file_or_directory)
-        if os.path.isdir(file_or_directory):
+        if os.path.isdir(file_or_directory_with_path):
             result += get_filenames_with_extensions_recursively(
                                             file_or_directory_with_path, extensions)
             continue 
@@ -23,16 +23,17 @@ def get_filenames_with_extensions_recursively(directory_name, extensions):
 def get_for_audio_track_number(audio_name):
     audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)
     track_str = audio_mediainfo['track'] 
-    track_nb_str = track_str.split('/') 
+    track_nb_str = track_str.split('/')
     return int(track_nb_str[0])      
 
-def make_short_videos(directory_name, 
+def make_video(       directory_name, 
                       width, 
                       height,
                       sub_font_size, 
                       sub_font_name, 
                       sub_encoding, 
-                      sub_colour, 
+                      sub_colour,
+                      sub_indent_x, 
                       description_intro, 
                       file_encoding, 
                       image_extensions = ('.jpg', ),
@@ -70,18 +71,20 @@ def make_short_videos(directory_name,
         audio_piece = pydub.AudioSegment.from_mp3(audio_name)
         audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)       
         # print(str(audio_piece.duration_seconds))
-        print(str(audio_mediainfo))
-        counter_audio = counter_audio + 1
-        track_name = 'Track ' + str(counter_audio) + ": " + audio_mediainfo['title']
-        descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + track_name.replace('\\', '') + " by " + audio_mediainfo['TCM']]
+        
+        counter_audio += 1
+        description, subtitles = get_audio_description_subtitles(counter_audio, audio_mediainfo)
+        descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + description]        
         
         #prepare the image: resize and add subtitles using PIL
         img = PIL.Image.open(images_filenames[counter_audio % len(images_filenames)])
         img = img.resize((width, height), PIL.Image.ANTIALIAS)
         
-        draw = PIL.ImageDraw.Draw(img)        
-        draw.text((10, height - 4 * sub_font_size), track_name            , sub_colour, font = font)
-        draw.text((10, height - 2 * sub_font_size), audio_mediainfo['TCM'], sub_colour, font = font)
+        draw = PIL.ImageDraw.Draw(img)
+        sub_indent_y = height
+        for subtitle in reversed(subtitles):  
+            sub_indent_y -=  2 * sub_font_size     
+            draw.text((sub_indent_x, sub_indent_y), subtitle, sub_colour, font = font)
         
         img.save(temp_image_name)
          
@@ -112,16 +115,23 @@ def make_short_videos(directory_name,
     # combine audio and video
     os.system('ffmpeg -i "' + silent_video_name + '" -i "' + compilation_audio_name 
                 + '" -shortest -c:v copy -c:a aac -b:a 256k "' + video_name + '"')   
+
+def get_audio_description_subtitles(counter_audio, audio_mediainfo):
+    print(str(audio_mediainfo))
+    track_name = 'Track ' + str(counter_audio) + ": " + audio_mediainfo['title'].replace('\\', '')
+    artist_name = audio_mediainfo['TCM'].replace('\\', '')
+    return track_name + " by " + artist_name, [track_name, artist_name]
        
 
 if __name__ == '__main__':
-    make_short_videos(directory_name = os.path.expanduser('~/Music/LouisXIII copy'), 
+    make_video(       directory_name = os.path.expanduser('~/Music/LouisXIII copy'), 
                       width = 1280, 
                       height = 720, 
                       sub_font_size = 32,
                       sub_font_name = "/System/Library/Fonts/SFNSText.ttf", 
                       sub_encoding = "unic", 
                       sub_colour = (0, 0, 255),
+                      sub_indent_x = 10,
                       description_intro = ['Intended for personal use. I own the CDs.', ''],
                       file_encoding = 'utf-8')
     print("done")
