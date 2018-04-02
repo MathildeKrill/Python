@@ -37,7 +37,8 @@ def make_video(       directory_name,
                       description_intro, 
                       file_encoding, 
                       image_extensions = ('.jpg', ),
-                      audio_extensions = ('.mp3', )):
+                      audio_extensions = ('.mp3', ), 
+                      dry_run = False):
     
     #prepare the directory and filenames
     temp_folder = os.path.join(directory_name, 'temp')
@@ -68,10 +69,8 @@ def make_video(       directory_name,
     counter_seconds = 0
     
     for audio_name in audio_filenames:
-        audio_piece = pydub.AudioSegment.from_mp3(audio_name)
         audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)       
-        # print(str(audio_piece.duration_seconds))
-        
+       
         counter_audio += 1
         description, subtitles = get_audio_description_subtitles(counter_audio, audio_mediainfo)
         descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + description]        
@@ -90,12 +89,16 @@ def make_video(       directory_name,
          
         # add the image to the video using PIL (adding by 1sec-long frames)  
         img2 = cv2.imread(temp_image_name)
+        audio_piece = pydub.AudioSegment.from_mp3(audio_name)        
         counter_frames = 0
         while (counter_frames < (audio_piece.duration_seconds + 1)):
-            video.write(img2) 
+            if not dry_run:
+                video.write(img2) 
             counter_frames = counter_frames + 1
             counter_seconds = counter_seconds + 1
-         
+        
+        if dry_run: 
+            continue
         # add the soundtrack to the audio compilation   
         audio = audio + audio_piece
         # match the duration of audio and video so far
@@ -107,7 +110,7 @@ def make_video(       directory_name,
     for d_line in descriptions:
         print (d_line)
     with codecs.open(descriptions_file_path, 'w', encoding = file_encoding) as the_file:
-        the_file.writelines('/n'.join(descriptions))
+        the_file.writelines('\r\n'.join(descriptions))
     
     # dump the long mp3
     audio.export(compilation_audio_name, format = "mp3")   
@@ -117,14 +120,15 @@ def make_video(       directory_name,
                 + '" -shortest -c:v copy -c:a aac -b:a 256k "' + video_name + '"')   
 
 def get_audio_description_subtitles(counter_audio, audio_mediainfo):
-    print(str(audio_mediainfo))
     track_name = 'Track ' + str(counter_audio) + ": " + audio_mediainfo['title'].replace('\\', '')
     artist_name = audio_mediainfo['TCM'].replace('\\', '')
     return track_name + " by " + artist_name, [track_name, artist_name]
        
 
 if __name__ == '__main__':
-    make_video(       directory_name = os.path.expanduser('~/Music/LouisXIII copy'), 
+    dirs = ['Louis XIV 13', 'Louis XIV 23']
+    for d in dirs:
+        make_video(   directory_name = os.path.expanduser('~/Music/' + d), 
                       width = 1280, 
                       height = 720, 
                       sub_font_size = 32,
@@ -133,5 +137,6 @@ if __name__ == '__main__':
                       sub_colour = (0, 0, 255),
                       sub_indent_x = 10,
                       description_intro = ['Intended for personal use. I own the CDs.', ''],
-                      file_encoding = 'utf-8')
+                      file_encoding = 'utf-8',
+                      dry_run = False)
     print("done")
