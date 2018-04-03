@@ -3,9 +3,12 @@ Created on 30 Mar 2018
 
 @author: yuliavoevodskaya
 '''
-import cv2, os, pydub, os, codecs, shutil, datetime, PIL, re
+
+import os, codecs, shutil, datetime, re
+import cv2, pydub, PIL # these packages need to be installed
 from PIL import ImageFont, ImageDraw
 
+# get filenames with given extensions from a given directory and all directories inside it
 def get_filenames_with_extensions_recursively(directory_name, extensions):
     result = []
     for file_or_directory in os.listdir(directory_name):
@@ -20,6 +23,8 @@ def get_filenames_with_extensions_recursively(directory_name, extensions):
                 continue
     return result
 
+# Score function for default audio sorting: directory containing the file, 
+# then the number of the track, then the name of the file
 def default_func_sort_audio_files(audio_name):    
     try:
         audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)
@@ -30,6 +35,8 @@ def default_func_sort_audio_files(audio_name):
         track_nb = -1
     return (os.path.dirname(audio_name), track_nb, os.path.basename(audio_name))  
 
+# Resize image, add subtitles and save it. 
+# Returns the filename of the resulting image (including the path)
 def add_subtitles(image_filename, 
                   temp_folder,
                   width, 
@@ -45,10 +52,10 @@ def add_subtitles(image_filename,
     img = img.convert("RGBA")
     
     # make a blank image for the rectangle, initialized to a completely transparent color
-    img2 = PIL.Image.new('RGBA', img.size, (0,0,0,0))
+    img2 = PIL.Image.new('RGBA', img.size, (0, 0, 0, 0))
     # get a drawing context for it
     draw = PIL.ImageDraw.Draw(img2)
-    
+
     # create the background coloured box
     max_length_subtitles = 0
     for subtitle in subtitles:
@@ -59,48 +66,54 @@ def add_subtitles(image_filename,
     if sub_bg_right > width:
         sub_bg_right = width
     sub_bg_top = height - len(subtitles) * 2 * font.size - sub_indent_x
-    print(sub_bg_colour)
     draw.rectangle(((0, sub_bg_top), (sub_bg_right, height)), fill = sub_bg_colour)    
     
     # add subtitles
     sub_indent_y = height
     for subtitle in reversed(subtitles):  
-        sub_indent_y -=  2 * font.size     
+        sub_indent_y -=  2 * font.size
         draw.text((sub_indent_x, sub_indent_y), subtitle, sub_colour, font = font)
     
-    # composite the two images together
-    img = PIL.Image.alpha_composite(img, img2)
-
-    # save
+    # composite the two images together and save
+    img_full = PIL.Image.alpha_composite(img, img2)
     temp_image_filename = os.path.join(temp_folder, 
                                        os.path.basename(image_filename) + '_with_subs.png')
     
-    img.save(temp_image_filename) 
+    img_full.save(temp_image_filename) 
     return temp_image_filename   
     
-
-def make_video(       directory_name, 
-                      func_get_audio_description_subtitles,
-                      func_sort_audio_files = default_func_sort_audio_files,
-                      width = 1280, 
-                      height = 720, 
-                      sub_font_size = 32,
-                      sub_font_name = "/System/Library/Fonts/SFNSText.ttf", 
-                      sub_encoding = "unic", 
-                      sub_colour = (255, 255, 255),
-                      sub_bg_colour = (0, 0, 0, 128),
-                      sub_indent_x = 10,
-                      description_intro = ['Intended for personal use. I own the CDs.', ''],
-                      file_encoding = 'utf-8', 
-                      image_extensions = ['.jpg', ],
-                      audio_extensions = ['.mp3', ], 
-                      dry_run = False):
+# The main function. It creates the video with all audio files of a given directory
+# All images with given extensions from the same directory are fetched. 
+# While an audio track is being played, one image, with the subtitles, is shown.
+# Images are shown in alphabetic order. 
+# Audio tracks are sorted using 'func_sort_audio_files'
+# Descriptions and subtitles are obtained using 'func_get_audio_description_subtitles'
+# Outputs: a compilation video 
+#          a text file that contains the description of the tracks that constitute the video
+def make_video( directory_name, 
+                func_get_audio_description_subtitles,
+                func_sort_audio_files = default_func_sort_audio_files,
+                width = 1280, 
+                height = 720, 
+                sub_font_size = 32,
+                sub_font_name = "/System/Library/Fonts/SFNSText.ttf", 
+                sub_encoding = "unic", 
+                sub_colour = (255, 255, 255),
+                # 4th number in sub_bg_colour is for the degree of transparency, 0 - 255 range
+                sub_bg_colour = (0, 0, 0, 128), 
+                sub_indent_x = 10,
+                description_intro = [''],
+                file_encoding = 'utf-8', 
+                image_extensions = ['.jpg', ],
+                audio_extensions = ['.mp3', ], 
+                dry_run = False):
     
-    #prepare the directory and filenames
+    start_time = datetime.datetime.now()
+    
+    # prepare the temp directory
     temp_folder = os.path.join(directory_name, 'temp')
     if not os.path.exists(temp_folder):
         os.makedirs(temp_folder)
-    silent_video_name      = os.path.join(temp_folder, os.path.basename(directory_name) + '_silent.mp4')
     extensions_to_remove = image_extensions + audio_extensions
     if not dry_run:
         extensions_to_remove += ['.mp4']
@@ -114,14 +127,14 @@ def make_video(       directory_name,
     audio_filenames =  get_filenames_with_extensions_recursively(directory_name, audio_extensions)
     audio_filenames.sort(key = lambda af: func_sort_audio_files(af))
     
-    # initiate variables
+    # initiate variables                 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     font = PIL.ImageFont.truetype(sub_font_name, sub_font_size, encoding = sub_encoding)  
-                 
-    descriptions = description_intro
-    audio = pydub.AudioSegment.silent(duration = 0)
+    silent_video_name = os.path.join(temp_folder, os.path.basename(directory_name) + '_silent.mp4')
     video = cv2.VideoWriter(silent_video_name, fourcc, 1.0, (width, height))
     
+    descriptions = description_intro
+    audio = pydub.AudioSegment.silent(duration = 0)
     counter_audio = 0
     counter_seconds = 0
     
@@ -153,40 +166,56 @@ def make_video(       directory_name,
             if not dry_run:
                 # add the image to the video using PIL (adding by 1sec-long frames)  
                 video.write(img2) 
-            counter_frames = counter_frames + 1
-            counter_seconds = counter_seconds + 1
+            counter_frames += 1
+            counter_seconds += 1
         
         if not dry_run: 
-            # add the soundtrack to the audio compilation   
-            audio = audio + audio_piece
+            audio += audio_piece
             # match the duration of audio and video so far
-            audio = audio + pydub.AudioSegment.silent(duration =  (counter_seconds * 1000.0 - len(audio))) 
-                  
+            audio += pydub.AudioSegment.silent(duration =  (counter_seconds * 1000.0 - len(audio))) 
+            
+    # Finalize the silent video              
     cv2.destroyAllWindows()
     video.release()
     
+    # Define the filenames
     descriptions_file_path = os.path.join(temp_folder, os.path.basename(directory_name) + '.txt')
     compilation_audio_name = os.path.join(temp_folder, os.path.basename(directory_name) + '.mp3')
     video_name             = os.path.join(temp_folder, os.path.basename(directory_name) + '.mp4')
     ffmpeg_output_path     = os.path.join(temp_folder, os.path.basename(directory_name) + '_ffmpeg.out')
-
-    print("The length of the video is " + str(counter_seconds / 60.0) + " minute(s)\n\n")
-    descriptions_len = 0
-    for d_line in descriptions:
-        print (d_line)
-        descriptions_len += len(d_line)
-    print("\n\nDescriptions length is (chars) " + str(descriptions_len))
-    with codecs.open(descriptions_file_path, 'w', encoding = file_encoding) as the_file:
-        the_file.writelines(d_line + "\n" for d_line in (descriptions))
     
-    # dump the long mp3
-    audio.export(compilation_audio_name, format = "mp3")   
+    if not dry_run:
+        # dump the long mp3
+        audio.export(compilation_audio_name, format = "mp3")   
     
-    # combine audio and video
-    ffmpeg_cmd = 'ffmpeg -i "' + silent_video_name + '" -i "' + compilation_audio_name \
+        # combine audio and silent video into the final video
+        ffmpeg_cmd = 'ffmpeg -i "' + silent_video_name + '" -i "' + compilation_audio_name \
                 + '" -shortest -c:v copy -c:a aac -b:a 256k "' + video_name + '"' \
                 + ' > "'+ ffmpeg_output_path + '" 2>&1'
-    os.system(ffmpeg_cmd)   
+        os.system(ffmpeg_cmd)   
+    
+    # Finalize and output the descriptions
+    descriptions_len = 0
+    for d_line in descriptions:
+        descriptions_len += len(d_line)
+    separator = "*" * 80    
+    descriptions = [separator, 
+                     "Directory: " + directory_name,
+                     separator] \
+                 + descriptions \
+                 + [separator, 
+                    "The length of the video is " + str(counter_seconds / 60.0) + " minute(s)",
+                    "It should be under 202-205min (this is a pydub limitation)",
+                    separator,
+                    "Description is " + str(descriptions_len) + " characters long",
+                    "It should be under 4500-5000 characters long (this is a youtube limitation)",
+                    separator,
+                    "Started " + str(start_time) + ", completed " + str(datetime.datetime.now()),
+                    separator]
+    for d_line in descriptions:
+        print (d_line)
+    with codecs.open(descriptions_file_path, 'w', encoding = file_encoding) as the_file:
+        the_file.writelines(d_line + "\n" for d_line in (descriptions))
 
 def get_audio_description_subtitles_louis(counter_audio, audio_mediainfo):
     title = audio_mediainfo['title'].replace('\\', '')
@@ -212,9 +241,10 @@ if __name__ == '__main__':
 #                   description_intro = ['', 'Colloquial Persian by Abdi Rafiee', 'Intended for personal use. I own the book.', ''],
 #                   dry_run = True)
 # 
-    dirs = ['LouisXIII copy']#Louis XIV 23']
+    dirs = ['LouisXIII copy', ] #'LouisXIII', 'Louis XIV 13', 'Louis XIV 23']#]
     for d in dirs:
         make_video(   directory_name = os.path.expanduser('~/Music/' + d), 
                       func_get_audio_description_subtitles = get_audio_description_subtitles_louis,
+                      description_intro = ['Intended for personal use. I own the CDs. All images are from Wikimedia Commons', ''],
                       dry_run = False)
     print("done")
