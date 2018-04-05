@@ -4,23 +4,18 @@ Created on 30 Mar 2018
 @author: yuliavoevodskaya
 '''
 
-import os, codecs, shutil, datetime, re
+import os, codecs, datetime, re, glob
 import cv2, pydub, PIL # these packages need to be installed
 from PIL import ImageFont, ImageDraw
 
 # get filenames with given extensions from a given directory and all directories inside it
 def get_filenames_with_extensions_recursively(directory_name, extensions):
-    result = []
-    for file_or_directory in os.listdir(directory_name):
-        file_or_directory_with_path = os.path.join(directory_name, file_or_directory)
-        if os.path.isdir(file_or_directory_with_path):
-            result += get_filenames_with_extensions_recursively(
-                                            file_or_directory_with_path, extensions)
-            continue 
-        for extension in extensions:
-            if file_or_directory.endswith(extension):
-                result += [file_or_directory_with_path]
-                continue
+    result = [] 
+    for extension in extensions:
+        path_pattern = os.path.join(directory_name, '**', '*.' + extension)   
+        result += glob.glob(path_pattern, recursive=True)
+    for f in result:
+        print(f)
     return result
 
 # Score function for default audio sorting: directory containing the file, 
@@ -46,41 +41,41 @@ def add_subtitles(image_filename,
                   sub_colour, 
                   sub_bg_colour, 
                   sub_indent_x):
-    #prepare the image: resize and add subtitles using PIL
-    img = PIL.Image.open(image_filename)
-    img = img.resize((width, height), PIL.Image.ANTIALIAS)    
-    img = img.convert("RGBA")
     
-    # make a blank image for the rectangle, initialized to a completely transparent color
-    img2 = PIL.Image.new('RGBA', img.size, (0, 0, 0, 0))
-    # get a drawing context for it
-    draw = PIL.ImageDraw.Draw(img2)
-
-    # create the background coloured box
-    max_length_subtitles = 0
-    for subtitle in subtitles:
-        sub_size = font.getsize(subtitle)
-        if max_length_subtitles < sub_size[0]:
-            max_length_subtitles = sub_size[0]
-    sub_bg_right = max_length_subtitles + 2 * sub_indent_x
-    if sub_bg_right > width:
-        sub_bg_right = width
-    sub_bg_top = height - len(subtitles) * 2 * font.size - sub_indent_x
-    draw.rectangle(((0, sub_bg_top), (sub_bg_right, height)), fill = sub_bg_colour)    
+    # make a blank completely transparent image for the rectangle
+    with PIL.Image.new('RGBA', (width, height), (0, 0, 0, 0)) as img2:
+        # get a drawing context for it
+        draw = PIL.ImageDraw.Draw(img2)
     
-    # add subtitles
-    sub_indent_y = height
-    for subtitle in reversed(subtitles):  
-        sub_indent_y -=  2 * font.size
-        draw.text((sub_indent_x, sub_indent_y), subtitle, sub_colour, font = font)
-    
-    # composite the two images together and save
-    img_full = PIL.Image.alpha_composite(img, img2)
-    temp_image_filename = os.path.join(temp_folder, 
-                                       os.path.basename(image_filename) + '_with_subs.png')
-    
-    img_full.save(temp_image_filename) 
-    return temp_image_filename   
+        # create the background coloured box
+        max_length_subtitles = 0
+        for subtitle in subtitles:
+            sub_size = font.getsize(subtitle)
+            if max_length_subtitles < sub_size[0]:
+                max_length_subtitles = sub_size[0]
+        sub_bg_right = max_length_subtitles + 2 * sub_indent_x
+        if sub_bg_right > width:
+            sub_bg_right = width
+        sub_bg_top = height - len(subtitles) * 2 * font.size - sub_indent_x
+        draw.rectangle(((0, sub_bg_top), (sub_bg_right, height)), fill = sub_bg_colour)    
+        
+        # add subtitles
+        sub_indent_y = height
+        for subtitle in reversed(subtitles):  
+            sub_indent_y -=  2 * font.size
+            draw.text((sub_indent_x, sub_indent_y), subtitle, sub_colour, font = font)
+            
+        with PIL.Image.open(image_filename) as img:
+            img = img.resize((width, height), PIL.Image.ANTIALIAS)    
+            img = img.convert("RGBA")
+            
+            # composite the two images together and save
+            temp_image_filename \
+                = os.path.join(temp_folder, 
+                               os.path.basename(image_filename) + '_with_subs.png')
+            with PIL.Image.alpha_composite(img, img2) as img_full:
+                img_full.save(temp_image_filename) 
+            return temp_image_filename   
     
 # The main function. It creates the video with all audio files of a given directory
 # All images with given extensions from the same directory are fetched. 
@@ -104,8 +99,8 @@ def make_video( directory_name,
                 sub_indent_x = 10,
                 description_intro = [''],
                 file_encoding = 'utf-8', 
-                image_extensions = ['.jpg', ],
-                audio_extensions = ['.mp3', ], 
+                image_extensions = ['jpg', 'png'],
+                audio_extensions = ['mp3', ], 
                 dry_run = False):
     
     start_time = datetime.datetime.now()
@@ -116,7 +111,7 @@ def make_video( directory_name,
         os.makedirs(temp_folder)
     extensions_to_remove = image_extensions + audio_extensions
     if not dry_run:
-        extensions_to_remove += ['.mp4']
+        extensions_to_remove += ['mp4']
     filenames_to_remove = get_filenames_with_extensions_recursively(temp_folder, extensions_to_remove)
     for fn in filenames_to_remove:
         os.remove(fn)
@@ -161,12 +156,11 @@ def make_video( directory_name,
             img2 = None
             
         audio_piece = pydub.AudioSegment.from_mp3(audio_name)        
-        counter_frames = 0
-        while (counter_frames < (audio_piece.duration_seconds + 1)):
+        limit_audio_length_so_far = counter_seconds + audio_piece.duration_seconds
+        while (counter_seconds <= limit_audio_length_so_far):
             if not dry_run:
                 # add the image to the video using PIL (adding by 1sec-long frames)  
                 video.write(img2) 
-            counter_frames += 1
             counter_seconds += 1
         
         if not dry_run: 
