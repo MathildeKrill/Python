@@ -160,8 +160,27 @@ def resumable_upload(insert_request):
       sleep_seconds = random.random() * max_sleep
       print("Sleeping %f seconds and then retrying..." % sleep_seconds)
       time.sleep(sleep_seconds)
+      
+def upload_on_youtube(      args_file,
+                            args_title,
+                            args_description,
+                            args_category,
+                            args_privacyStatus):
+        if not os.path.exists(args_file):
+            exit("Please specify a valid file using the --file= parameter.")
+        youtube = get_authenticated_service(*args)
+        try:
+            initialize_upload(youtube, args)
+        except HttpError as e:
+            print("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
 
 if __name__ == '__main__':
+    upload_on_youtube(      args_file = os.path.expanduser('~/Music/LouisXIII copy'),
+                            args_title="LouisXIII copy",
+                            args_description="LouisXIII copy",
+                            args_category="22",
+                            args_privacyStatus="unlisted")
+    
     pass
 #   argparser.add_argument("--file", required=True, help="Video file to upload")
 #   argparser.add_argument("--title", help="Video title", default="Test Title")

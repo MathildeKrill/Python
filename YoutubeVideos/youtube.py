@@ -4,7 +4,7 @@ Created on 30 Mar 2018
 @author: yuliavoevodskaya
 '''
 
-import os, codecs, datetime, re, glob
+import os, codecs, datetime, glob
 import cv2, pydub, PIL # these packages need to be installed
 from PIL import ImageFont, ImageDraw
 
@@ -85,6 +85,8 @@ def add_subtitles(image_filename,
 #          a text file that contains the description of the tracks that constitute the video
 def make_video( directory_name, 
                 func_get_audio_description_subtitles,
+                video_title = None,
+                artist_override = None,
                 func_sort_audio_files = default_func_sort_audio_files,
                 width = 1280, 
                 height = 720, 
@@ -132,16 +134,24 @@ def make_video( directory_name,
     counter_seconds = 0
     
     for audio_name in audio_filenames:
+        
+        audio_mediainfo = {}
         try:
             audio_mediainfo = pydub.utils.mediainfo(audio_name).get('TAG', None)   
         except:
-            audio_mediainfo = None
-        if not audio_mediainfo:
+            pass
+        
+        if not ('title' in audio_mediainfo):
             track_name = os.path.basename(audio_name)
             # remove the extension
             track_name = track_name[:track_name.rfind('.')]
-            audio_mediainfo = {'title' : track_name, 'artist' : '???'}    
-       
+            audio_mediainfo['title'] = track_name
+            
+        if not ('artist' in audio_mediainfo):
+            audio_mediainfo['artist'] = ''
+        if (artist_override != None):  
+            audio_mediainfo['artist'] = artist_override
+            
         counter_audio += 1
         description, subtitles = func_get_audio_description_subtitles(counter_audio, audio_mediainfo)
         descriptions += [str(datetime.timedelta(seconds=counter_seconds)) + " " + description]
@@ -179,10 +189,12 @@ def make_video( directory_name,
     video.release()
     
     # Define the filenames
-    descriptions_file_path = os.path.join(temp_folder, os.path.basename(directory_name) + '.txt')
-    compilation_audio_name = os.path.join(temp_folder, os.path.basename(directory_name) + '.mp3')
-    video_name             = os.path.join(temp_folder, os.path.basename(directory_name) + '.mp4')
-    ffmpeg_output_path     = os.path.join(temp_folder, os.path.basename(directory_name) + '_ffmpeg.txt')
+    if video_title == None:
+        video_title = os.path.basename(directory_name)
+    descriptions_file_path = os.path.join(temp_folder, video_title + '.txt')
+    compilation_audio_name = os.path.join(temp_folder, video_title + '.mp3')
+    video_name             = os.path.join(temp_folder, video_title + '.mp4')
+    ffmpeg_output_path     = os.path.join(temp_folder, video_title + '_ffmpeg.txt')
     
     if not dry_run:
         # dump the long mp3
@@ -217,69 +229,23 @@ def make_video( directory_name,
     with codecs.open(descriptions_file_path, 'w', encoding = file_encoding) as the_file:
         the_file.writelines(d_line + "\n" for d_line in (descriptions))
 
-def get_audio_description_subtitles_louis(counter_audio, audio_mediainfo):
-    title = audio_mediainfo['title'].replace('\\', '')
-    track_name = 'Track ' + str(counter_audio) + ": " + title
-    artist_name = audio_mediainfo['TCM'].replace('\\', '')
-    artist_name = (re.split('\s\((\d\d\d\d-\d\d\d\d)\)', artist_name))[0]# remove dates like (1578-1645)
-    desc = track_name
-    if artist_name != 'Dumont, Henry; Lully, Jean-Baptiste; Desmarets, Henry':
-        desc += " by " + artist_name
-    return desc, [track_name, artist_name]
-
-def get_audio_description_subtitles_Williams(counter_audio, audio_mediainfo):
-    audio_mediainfo['artist'] = 'John Williams'
-    return get_audio_description_subtitles_simple(counter_audio, audio_mediainfo)
-
 def get_audio_description_subtitles_simple(counter_audio, audio_mediainfo):
-    title = audio_mediainfo['title'].strip()
+    title = audio_mediainfo['title'].strip().replace('\\', '')
     track_name = 'Track ' + str(counter_audio) + ": " + title
     artist_name = audio_mediainfo['artist'].strip()
     desc = track_name + " by " + artist_name
     return desc, [track_name, artist_name]
 
-def get_audio_description_subtitles_farsi(counter_audio, audio_mediainfo):
-    track_name = 'Track ' + str(counter_audio) 
-    return track_name, [track_name, "Colloquial Persian by Abdi Rafiee"]
-
-def dry_runget_audio_description_subtitles_dry_run(counter_audio, audio_mediainfo):
+def dry_run_get_audio_description_subtitles_dry_run(counter_audio, audio_mediainfo):
     print(audio_mediainfo)   
     return "", ""
 
-def get_audio_description_subtitles_LeGenreHumain(counter_audio, audio_mediainfo):
-    titles = ["Le Genre Humain", "Noël", "Le Bonheur C'est Mieux Que La Vie", 
-     "Le Genre Humain", "Le Courage D'aimer", "Le Bonheur C'est Mieux Que La Vie (Version Instrumentale)", 
-     "Crépuscule Sur Le Boulevard", "Noël (Instrumental)", "2000 Ans Et Des Poussières", 
-     "Crépuscule Sur Le Boulevard", "Le Genre Humain", "La Ville Lumière (Instrumental)", 
-     "J'ai Pas Tout Dit", "2000 Ans Et Des Poussières (Instrumental)", "Maria Mari", 
-     "Le Courage D'aimer (Instrumental)", "Le Bonheur C'est Mieux Que La Vie", "La Ville Lumière"]
-    title = titles[counter_audio-1]
-    track_name = 'Track ' + str(counter_audio) + ": " + title
-    artist_name = "Francis Lai"
-    desc = track_name + " by " + artist_name
-    return desc, [track_name, artist_name]
-
-
 if __name__ == '__main__':
-
-#     make_video(   directory_name = os.path.expanduser('~/Music/iTunes/iTunes Media/Music/Unknown Artist/Farsi'), 
-#                   func_get_audio_description_subtitles = get_audio_description_subtitles_farsi,
-#                   description_intro = ['', 'Colloquial Persian by Abdi Rafiee', 'Intended for personal use. I own the book.', ''],
-#                   dry_run = True)
-# 
-#     dirs = ['LouisXIII copy', ] #'LouisXIII', 'Louis XIV 13', 'Louis XIV 23']#]
-#     for d in dirs:
-#         make_video(   directory_name = os.path.expanduser('~/Music/' + d), 
-#                       func_get_audio_description_subtitles = get_audio_description_subtitles_louis,
-#                       description_intro = ['Intended for personal use. I own the CDs. All images are from Wikimedia Commons', ''],
-#                       dry_run = False)
-        
-    make_video(   directory_name = "/Volumes/My Passport/Netbook/Music/COMPPiLATIONS/Williams - Spanish Guitar Music",
-                  func_get_audio_description_subtitles = get_audio_description_subtitles_Williams,
-                  dry_run = False)
-     
-#     make_video(   directory_name = "/Volumes/My Passport/Netbook/Music/Francis Lai",
-#                   func_get_audio_description_subtitles = get_audio_description_subtitles_LeGenreHumain,
-#                   dry_run = False)
-        
-    print("done")
+    make_video(   directory_name = os.path.expanduser('~/Music/LouisXIII copy'), 
+                  #artist_override = 'Dalida',
+                  func_get_audio_description_subtitles = get_audio_description_subtitles_simple,
+                  description_intro = ['Intended for personal use. I own the CDs', ''],
+                  dry_run = True)
+    
+    
+    
