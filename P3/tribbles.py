@@ -6,13 +6,18 @@ Created on 20 Mar 2019
 
 import random, math, codecs, os.path
 
-def tribbles_one_path(prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations):
+def tribbles_one_path(prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations, no_voids):
     
     population = init_population
     
     for _ in range(nb_generations):
         weather = random.random()
         population_mountains = round(population * prob_choose_mountains)
+        if no_voids:
+            if population_mountains < 1: # at least one tribble lives in the mountains
+                population_mountains = 1
+            if population_mountains > (population - 1): # at least one tribble lives in the valley
+                population_mountains = population - 1
         if weather > prob_rain: 
             population = (population - population_mountains) * nb_children
         else: 
@@ -20,7 +25,7 @@ def tribbles_one_path(prob_choose_mountains, prob_rain, nb_children, init_popula
         # print(population)
     return population
 
-def get_tribbles_survival_probability_growth(nb_paths, prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations):
+def get_tribbles_survival_probability_growth(nb_paths, prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations, no_voids):
     
     nb_extint = 0.
     total_population_growth_log = 0.0
@@ -31,7 +36,8 @@ def get_tribbles_survival_probability_growth(nb_paths, prob_choose_mountains, pr
                                        prob_rain=prob_rain, 
                                        nb_children=nb_children, 
                                        init_population=init_population, 
-                                       nb_generations=nb_generations)
+                                       nb_generations=nb_generations,
+                                       no_voids=no_voids)
         if population < 1.0:
             nb_extint += 1.
         else:
@@ -54,14 +60,14 @@ def array_to_line(an_array, separator='|'):
     return result
 
 if __name__ == '__main__':
-    file_path = os.path.expanduser('~/Documents/Sites/wordpress-yu51a5/tribbles.txt')
-    title_line = ['prob rain', 'nb children', 'prob to choose mountains', 
+    file_path = os.path.expanduser('~/Documents/Sites/wordpress-yu51a5/tribbles.numbers.txt')
+    title_line = ['nb children', 'prob rain', 'prob to choose mountains', 
                                            'prob population survival', 'growth rate', 'growth rate std dev', 'growth rate var']
     file_contents = [array_to_line(title_line)]
-    for percentage_rains in range(0, 101):
-        for nb_children in (2, 3, 5, 8):
-            for percentage_choose_mountains in range(0, 101):
-                new_line = [percentage_rains / 100.0, nb_children, percentage_choose_mountains / 100.0]
+    for nb_children in (2, 3, 5, 8):
+        for percentage_rains in range(1, 5, 99):
+            for percentage_choose_mountains in (1, 2, percentage_rains - 1, percentage_rains, percentage_rains + 1, 98, 99):
+                new_line = [nb_children, percentage_rains / 100.0, percentage_choose_mountains / 100.0]
                 try:
                     survival_prob_growth = get_tribbles_survival_probability_growth(
                                                       nb_paths=10000, 
@@ -69,11 +75,11 @@ if __name__ == '__main__':
                                                       prob_rain=percentage_rains / 100.0, 
                                                       nb_children=nb_children, 
                                                       init_population=4000, 
-                                                      nb_generations=300)
+                                                      nb_generations=300,
+                                                      no_voids=True)
                     new_line += survival_prob_growth
                 except:
                     print(new_line)
-                file_contents.append(array_to_line(new_line))
-                
-    write_to_file(file_path=file_path, file_content=file_contents)
+                file_contents.append(array_to_line(new_line))                
+        write_to_file(file_path=file_path, file_content=file_contents)
     
