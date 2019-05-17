@@ -64,8 +64,10 @@ def get_tribbles_survival_probability_growth_MC(nb_paths, prob_choose_mountains,
 def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain, nb_children, nb_generations, thresholds_ES):
     def sqr(x):
         return x * x
+    max_nb_tribbles = exp(nb_generations * log(nb_children))
+    
     expected_nb_tribbles = exp(nb_generations * log(nb_children * (
-                                prob_rain * prob_choose_mountains + (1 - prob_rain) * (1 - prob_choose_mountains))))
+                                prob_rain * prob_choose_mountains + (1 - prob_rain) * (1 - prob_choose_mountains)))) / max_nb_tribbles
     aux_var = (prob_rain * sqr(prob_choose_mountains) + (1 - prob_rain) * sqr(1 - prob_choose_mountains)) \
                 / sqr(prob_rain * sqr(prob_choose_mountains) + (1 - prob_rain) * (1 - prob_choose_mountains))
     expected_variance_normalized = (exp(nb_generations * log(aux_var)) - 1)
@@ -75,7 +77,7 @@ def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain
     
     result = [expected_nb_tribbles, expected_variance_normalized, expected_log_growth]
     # initial values
-    prob_number_sunny_days =  exp(nb_generations * log(prob_rain)) 
+    prob_number_sunny_days =  exp(nb_generations * log(prob_rain))
     nb_tribble_given_number_sunny_days = exp((nb_generations * log(nb_children * prob_choose_mountains)))
     # initial cumul values
     cum_prob_number_sunny_days = 0.
@@ -94,9 +96,9 @@ def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain
         while (new_cum_prob_number_sunny_days >= thresholds_ES[ES_counter]):
             scaling_factor = (thresholds_ES[ES_counter] - cum_prob_number_sunny_days) \
                                 / (new_cum_prob_number_sunny_days - cum_prob_number_sunny_days)
-            avg_cum_expected_shortfall_before_norm = (new_cum_prob_number_sunny_days * scaling_factor
-                                                            + cum_prob_number_sunny_days * (1 - scaling_factor)) 
-            ES_values.append(avg_cum_expected_shortfall_before_norm / thresholds_ES[ES_counter])
+            avg_cum_expected_shortfall_before_norm = (new_cum_expected_shortfall_before_norm * scaling_factor
+                                                            + cum_expected_shortfall_before_norm * (1 - scaling_factor))
+            ES_values.append(avg_cum_expected_shortfall_before_norm / (thresholds_ES[ES_counter] * max_nb_tribbles))
             ES_counter += 1
             if ES_counter == len(thresholds_ES):
                 break
@@ -108,7 +110,7 @@ def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain
         cum_prob_number_sunny_days = new_cum_prob_number_sunny_days
         cum_expected_shortfall_before_norm = new_cum_expected_shortfall_before_norm
         
-    result.append(ES_values)
+    result += ES_values
     return result
                 
 def write_to_file(file_path, file_content, my_encoding='utf-8'):
@@ -116,12 +118,14 @@ def write_to_file(file_path, file_content, my_encoding='utf-8'):
         the_file.writelines([(','.join([str(x) for x in an_array]) + '\n') for an_array in file_content])
 
 if __name__ == '__main__':
-    file_path = os.path.expanduser('~/Documents/Sites/wordpress-yu51a5/tribbles.numbers.txt')
+    file_path = os.path.expanduser('~/Documents/Sites/wordpress-yu51a5/tribbles.csv')
     title_line = ['nb children', 'prob rain', 'prob to choose mountains', 
                                           # 'prob population survival', 'growth', 'growth std dev', 'growth rate', 'growth rate std dev']
                                           'expected nb tribbles', 'normalized variance', 'expected log growth']
     init_population=4000 
     nb_generations=100
+    thresholds_ES=[0.001, 0.01]
+    title_line += ['ES @ ' + str((1-tr) * 100) + '%' for tr in thresholds_ES]
     file_contents = [title_line]
     for nb_children in (2, 3, 5, 8):
         for percentage_rains in range(1, 10):
@@ -138,7 +142,7 @@ if __name__ == '__main__':
                                 prob_rain=percentage_rains / 100.0, 
                                 nb_children=nb_children, 
                                 nb_generations=nb_generations, 
-                                thresholds_ES=[])
+                                thresholds_ES=thresholds_ES)
                 new_line += result
 #                 try:
 #                     survival_prob_growth = get_tribbles_survival_probability_growth(
