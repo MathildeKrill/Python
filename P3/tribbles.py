@@ -4,68 +4,15 @@ Created on 20 Mar 2019
 @author: yuliavoevodskaya
 '''
 
-import random, math, codecs, os.path, numpy
-from math import log, exp
+import math, codecs, os.path, numpy
 
-ZeroLimit = numpy.nextafter(numpy.nextafter(0, 1), 1)
+ZeroLimit = numpy.nextafter(numpy.nextafter(0, 1), 1) # a "static" constant 
 def isZero(x):
     return (x < ZeroLimit) and (x > (-ZeroLimit))
-
-def tribbles_one_path(prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations, no_voids):
-    
-    population = init_population
-    
-    for _ in range(nb_generations):
-        weather = random.random()
-        population_mountains = round(population * prob_choose_mountains)
-        if no_voids:
-            if population_mountains < 1: # at least one tribble lives in the mountains
-                population_mountains = 1
-            if population_mountains > (population - 1): # at least one tribble lives in the valley
-                population_mountains = population - 1
-        if weather > prob_rain: 
-            population = (population - population_mountains) * nb_children
-        else: 
-            population = population_mountains * nb_children
-        # print(population)
-    return population
-
-def get_tribbles_survival_probability_growth_MC(nb_paths, prob_choose_mountains, prob_rain, nb_children, init_population, nb_generations, no_voids):
-    
-    nb_extint = 0.
-    total_population_growth = 0.0
-    total_population_growth_sqr = 0.0
-    total_population_growth_log = 0.0
-    total_population_growth_log_sqr = 0.0
-    
-    for _ in range(nb_paths):
-        population = tribbles_one_path(prob_choose_mountains=prob_choose_mountains, 
-                                       prob_rain=prob_rain, 
-                                       nb_children=nb_children, 
-                                       init_population=init_population, 
-                                       nb_generations=nb_generations,
-                                       no_voids=no_voids)
-        if population < 1.0:
-            nb_extint += 1.
-        else:
-            population_growth = population / (nb_children * init_population)
-            total_population_growth += population_growth
-            total_population_growth_sqr += population_growth * population_growth
-            population_growth_rate = math.log(population_growth) / nb_generations
-            total_population_growth_log += population_growth_rate
-            total_population_growth_log_sqr += population_growth_rate * population_growth_rate
-    variance=(total_population_growth_sqr 
-            - total_population_growth * total_population_growth / nb_paths) / (nb_paths - 1) 
-    variance_log = (total_population_growth_log_sqr 
-            - total_population_growth_log * total_population_growth_log / nb_paths) / (nb_paths - 1)
-         
-    return [1.0 - (nb_extint / nb_paths), 
-            total_population_growth / nb_paths, 
-            math.sqrt(max(variance, 0.0) / nb_paths), 
-            total_population_growth_log / nb_paths, 
-            math.sqrt(max(variance_log, 0.0) / nb_paths)]
     
 def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain, nb_children, nb_generations, thresholds_ES):
+    
+    # analytic formulae
     expected_nb_tribbles_all_valley = (nb_children * (1. - prob_rain)) ** nb_generations
     expected_nb_tribbles = (nb_children * (prob_rain * prob_choose_mountains + (1 - prob_rain) * (1 - prob_choose_mountains))) ** nb_generations
     
@@ -82,10 +29,12 @@ def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain
     if isZero(prob_choose_mountains):
         expected_log_growth = -math.inf
     else:
-        expected_log_growth = nb_generations * (log(nb_children) + prob_rain * log(prob_choose_mountains) \
-                                                        + (1 - prob_rain) *  log(1 - prob_choose_mountains)) 
+        expected_log_growth = nb_generations * (math.log(nb_children) + prob_rain * math.log(prob_choose_mountains) \
+                                                        + (1 - prob_rain) *  math.log(1 - prob_choose_mountains)) 
     
     result = [expected_nb_tribbles, expected_nb_tribbles_reduction, expected_variance, expected_variance_reduction, expected_log_growth]
+    
+    # from now to the end of the function - ES computation
     # initial values
     prob_number_sunny_days =  prob_rain ** nb_generations
     if isZero(prob_choose_mountains):
@@ -124,7 +73,6 @@ def get_tribbles_survival_probability_growth_CF(prob_choose_mountains, prob_rain
             nb_tribble_given_number_sunny_days = 0
         else:
             nb_tribble_given_number_sunny_days *= (1. - prob_choose_mountains) / prob_choose_mountains
-            #print(nb_tribble_given_number_sunny_days)
         
         cum_prob_number_sunny_days = new_cum_prob_number_sunny_days
         cum_expected_shortfall_before_norm = new_cum_expected_shortfall_before_norm
@@ -138,23 +86,23 @@ def write_to_file(file_path, file_content, my_encoding='utf-8'):
 
 if __name__ == '__main__':
     file_path = os.path.expanduser('~/Documents/Sites/wordpress-yu51a5/tribbles.csv')
-    title_line = ['nb children', 'prob rain', 'prob mountains', 
-                                          # 'prob population survival', 'growth', 'growth std dev', 'growth rate', 'growth rate std dev']
-                    'expected nb tribbles', 'expected nb tribbles reduction', 'expected variance', 'expected variance reduction',
-                    'log growth']
-    #init_population=4000 
     nb_generations=100
     thresholds_ES=[0.001, 0.01, 0.05]
-    title_line += ['normalized ES @ ' + str((1-tr) * 100) + '%' for tr in thresholds_ES]
+    title_line=['nb children', 'prob rain', 'prob mountains', 
+                    'expected nb tribbles', 'expected nb tribbles reduction', 'expected variance', 'expected variance reduction',
+                    'log growth'] + ['normalized ES @ ' + str((1 - tr) * 100) + '%' for tr in thresholds_ES]
     file_contents = [title_line]
     for nb_children in (2, 3, 5, 8):
         for percentage_rains in range(1, 10):
+            # compile values_percentage_choose_mountains
             values_percentage_choose_mountains = [0, 0.1, 1, 2]
             if percentage_rains > 2:
                 values_percentage_choose_mountains += [percentage_rains, percentage_rains + 1]
             if percentage_rains == 2:
                 values_percentage_choose_mountains += [3]
             values_percentage_choose_mountains += [20, 49]
+            
+            #run
             for percentage_choose_mountains in values_percentage_choose_mountains:
                 new_line = [nb_children, percentage_rains / 100.0, percentage_choose_mountains / 100.0]
                 result = get_tribbles_survival_probability_growth_CF(
@@ -164,18 +112,6 @@ if __name__ == '__main__':
                                 nb_generations=nb_generations, 
                                 thresholds_ES=thresholds_ES)
                 new_line += result
-#                 try:
-#                     survival_prob_growth = get_tribbles_survival_probability_growth(
-#                                                       nb_paths=10000, 
-#                                                       prob_choose_mountains=percentage_choose_mountains / 100.0, 
-#                                                       prob_rain=percentage_rains / 100.0, 
-#                                                       nb_children=nb_children, 
-#                                                       init_population=init_population, 
-#                                                       nb_generations=nb_generations,
-#                                                       no_voids=True)
-#                     new_line += survival_prob_growth
-#                 except:
-#                     print(new_line)
                 file_contents.append(new_line)                
-        write_to_file(file_path=file_path, file_content=file_contents)
+    write_to_file(file_path=file_path, file_content=file_contents)
     
