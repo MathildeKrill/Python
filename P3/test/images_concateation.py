@@ -17,7 +17,6 @@ def url_to_image(url):
 
 def image_crop_square(img, new_size):
     height, width, _ = img.shape
-    print(str(height) + '; ' + str(width))
     if new_size > height:
         new_size = height
     if new_size > width:
@@ -48,8 +47,6 @@ def size_same(images, height_not_width, crop_not_scale=False):
     else:
         scale_factors = [min_size/image.shape[shape_dim] for image in images]
         new_images = [cv2.resize(image, dsize=None, fx=scale_factor, fy=scale_factor) for (scale_factor, image) in zip(scale_factors, images)] 
-    for image in new_images:
-        print(image.shape)       
     return new_images 
 
 def create_image(height, width):
@@ -63,7 +60,7 @@ def save_image(filename, image):
     print(filename_path)
     cv2.imwrite(filename_path, image, [int(cv2.IMWRITE_JPEG_QUALITY), IMWRITE_JPEG_QUALITY])        
 
-def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = .05):   
+def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = .02):   
     new_images = size_same(images,     height_not_width=horizontally_not_vertically, crop_not_scale=False)
     if same_images_size:
         new_images = size_same(new_images, height_not_width=(not horizontally_not_vertically), crop_not_scale=True)
@@ -72,7 +69,6 @@ def concatenate_images(images, horizontally_not_vertically, same_images_size, wi
     else:
         dim_same_size = 1
     same_size = new_images[0].shape[dim_same_size]
-    print(same_size)
     qty_images = len(new_images)
     sum_images_diff_sizes=0
     for image in new_images:
@@ -81,39 +77,36 @@ def concatenate_images(images, horizontally_not_vertically, same_images_size, wi
         width_white = int(sum_images_diff_sizes / (1. - width_white_pc * (qty_images - 1)) * width_white_pc)
     else:
         width_white = int(same_size * width_white_pc)
-    print(width_white)    
     total_new_size = width_white * (qty_images - 1) + sum_images_diff_sizes
-    print(total_new_size)    
     
     if horizontally_not_vertically:
         big_image = create_image(same_size, total_new_size)
     else:
         big_image = create_image(total_new_size, same_size)        
     big_image.fill(255)
-    print(big_image.shape)    
     
     counter=0
     for image in new_images:
         add_size = image.shape[1 - dim_same_size]
-        print(counter, (counter + add_size))
-        print(image.shape)
         if horizontally_not_vertically:
             big_image[:, counter : (counter + add_size)] = image
         else:
             big_image[counter : (counter + add_size), :] = image
         counter += add_size + width_white
-    cv2.imshow('img-windows', big_image)    
-    cv2.waitKey(0)
     return big_image
+
+def shrink(image, max_width):
+    _, width, _ = image.shape 
+    if max_width > width:
+        return image        
+    resize_factor = max_width / width
+    new_image = cv2.resize(image, None, fx = resize_factor, fy = resize_factor)
+    return new_image
 
 def crop_concatenate_resize(urls, filename, cropped_size, final_width):
     cropped_images = [image_crop_square(img = url_to_image(url), new_size = cropped_size) for url in urls]      
     big_image = concatenate_images(cropped_images, horizontally_not_vertically = True, same_images_size = True, width_white_pc = 0)  
-    
-    _, width, _ = big_image.shape          
-    resize_factor = final_width / width
-    small = cv2.resize(big_image, (0,0), fx = resize_factor, fy = resize_factor)
-    
+    small = shrink(image = big_image, max_width = final_width)    
     save_image(filename, small)       
 
 if __name__ == '__main__':
@@ -145,9 +138,16 @@ if __name__ == '__main__':
     # for mfa in mfas:
     #    crop_concatenate_resize(urls = mfa[1:-1], filename = mfa[-1], cropped_size = mfa[0], final_width = 1024)
     
-    images = [url_to_image('http://www.yu51a5.com/wp-content/uploads/horsemen/' + fn) for fn in ['AN00149889_001_l.jpg',
-                                                                                   'AN00150545_001_l.jpg',
-                                                                                   'AN00150544_001_l.jpg']]
-    concatenate_images(images, horizontally_not_vertically = False, same_images_size = True, width_white_pc = .05)
- 
+    all_fns = [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
+               ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
+               ['KK_6025_01.jpg', 'KK_6754_01.jpg', 'KK_6753_01.jpg', 'KK_6020_13168.jpg']]
+    big_images = [concatenate_images([url_to_image('http://www.yu51a5.com/wp-content/uploads/horsemen/' + fn) for fn in fns], 
+                                     horizontally_not_vertically = True, 
+                                     same_images_size = True) for fns in all_fns]
+    big_image_2 = concatenate_images(big_images, 
+                                     horizontally_not_vertically = False, 
+                                     same_images_size = False)
+    final_image = shrink(big_image_2, 800)
+
+    save_image(filename = 'headlessHorsemen', image = final_image)
 
