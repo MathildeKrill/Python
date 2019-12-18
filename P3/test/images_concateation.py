@@ -1,5 +1,7 @@
 import numpy, cv2, os
 import urllib.request
+import codecs
+import re
 
 headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
 IMWRITE_JPEG_QUALITY = 95
@@ -95,12 +97,19 @@ def concatenate_images(images, horizontally_not_vertically, same_images_size, wi
         counter += add_size + width_white
     return big_image
 
-def shrink(image, max_width):
-    _, width, _ = image.shape 
-    if max_width > width:
-        return image        
-    resize_factor = max_width / width
-    new_image = cv2.resize(image, None, fx = resize_factor, fy = resize_factor)
+def shrink(image, max_width = -1, max_height = -1):
+    height, width, _ = image.shape
+    resize_factor = 1
+    if width > max_width and max_width > 0:
+        resize_factor = width / max_width
+    if max_height > 0:
+        if resize_factor < (height / max_height):
+            resize_factor = (height / max_height)
+    if resize_factor < (1 - 1e-6):
+        return image
+    print (image.shape)      
+    new_image = cv2.resize(image, None, fx = 1./resize_factor, fy = 1./resize_factor)
+    print (new_image.shape)      
     return new_image
 
 def crop_concatenate_resize(urls, filename, cropped_size, final_width):
@@ -138,16 +147,52 @@ if __name__ == '__main__':
     # for mfa in mfas:
     #    crop_concatenate_resize(urls = mfa[1:-1], filename = mfa[-1], cropped_size = mfa[0], final_width = 1024)
     
-    all_fns = [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
-               ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
-               ['KK_6025_01.jpg', 'KK_6754_01.jpg', 'KK_6753_01.jpg', 'KK_6020_13168.jpg']]
-    big_images = [concatenate_images([url_to_image('http://www.yu51a5.com/wp-content/uploads/horsemen/' + fn) for fn in fns], 
-                                     horizontally_not_vertically = True, 
-                                     same_images_size = True) for fns in all_fns]
-    big_image_2 = concatenate_images(big_images, 
-                                     horizontally_not_vertically = False, 
-                                     same_images_size = False)
-    final_image = shrink(big_image_2, 800)
+#     all_fns = [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
+#                ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
+#                ['KK_6025_01.jpg', 'KK_6754_01.jpg', 'KK_6753_01.jpg', 'KK_6020_13168.jpg']]
+#     big_images = [concatenate_images([url_to_image('http://www.yu51a5.com/wp-content/uploads/horsemen/' + fn) for fn in fns], 
+#                                      horizontally_not_vertically = True, 
+#                                      same_images_size = True) for fns in all_fns]
+#     big_image_2 = concatenate_images(big_images, 
+#                                      horizontally_not_vertically = False, 
+#                                      same_images_size = False)
+#     final_image = shrink(big_image_2, 800)
+# 
+#     save_image(filename = 'headlessHorsemen', image = final_image)
+#     ids = [18202573, 18201481]# , 18204280, 18201471, 18236941, 18236949, 18230064, 18219808, 18236701, 18201473, 18204280, 18204280,
+#     # 18232830, 18220883, 18250418, 18236701, 18201363, 18201547, 18201832, 18201843, 18206785, 18202573, 18231792]
+#     for id in ids:
+#         url_beginning = 'https://ikmk.smb.museum/image/' + str(id) + '/'
+#         urls = [url_beginning + 'vs_exp.jpg', url_beginning + 'rs_exp.jpg']
+#         double_image_big = concatenate_images([url_to_image(a_url) for a_url in urls], 
+#                                               horizontally_not_vertically = True, 
+#                                               same_images_size = False)
+#         double_image = shrink(double_image_big, max_width=1024)
+#         save_image(filename = 'ikmk_coin_' + str(id), image = double_image)
+#         print('insert_into_images("horsemen/ikmk_coin_{:n}.jpg", \n\
+#                             "ikmk", \n\
+#                             "{:n}", \n\
+#                             " showing  on horseback on reverse, <br/>minted in  under , Roman Republic Empire");'.format(id, id));
 
-    save_image(filename = 'headlessHorsemen', image = final_image)
+    file_path = os.path.expanduser('~/Downloads/Officers Expense Claim Form/Sheet1.html')                      
+    my_encoding = 'utf-8'
+    with codecs.open(file_path, encoding = my_encoding) as file_opened:
+        file_contents = file_opened.read()
+               
+    n=1             
+    for match in re.finditer(pattern = 'img src=\'(.*?)[\'\;]', string = file_contents): #/\<img src=/
+        a_url = match.group(1)
+        print(a_url)
+          
+        try:
+            an_image = url_to_image(a_url)
+            print('ok')
+        except:
+            print('---NOT OK')
+        if n<10:
+            str_n = '0' + str(n)
+        else:
+            str_n = str(n)
+        save_image(filename = 'mensa_expenses_' + str_n, image = an_image)
+        n=n + 1
 

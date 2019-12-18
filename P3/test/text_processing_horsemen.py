@@ -214,8 +214,20 @@ def params_to_php(im):
             params[j] = '"' + params[j] + '"';  
 
     new_php = '    insert_into_images(' + (', \n                            '.join(params))  + ');\n'
-    return new_php
+    return new_php 
 
+my_encoding = 'utf-8'
+
+def remove_yu_h(file_path):
+    with codecs.open(file_path, encoding = my_encoding) as file_opened:
+        file_content_list = file_opened.readlines()
+    new_file_list = []
+    for s in file_content_list:
+        s = re.sub('\[yu_h[^\]]*\]', '<h1>', s)
+        s = re.sub('\[\/yu_h\]', '</h1>', s)
+        new_file_list.append(s)
+    with codecs.open(file_path, 'w', encoding = my_encoding) as the_file:
+        the_file.writelines(new_file_list)
 
 if __name__ == '__main__':
        
@@ -223,6 +235,8 @@ if __name__ == '__main__':
     dir_path_wp = expanduser('~/Documents/Sites/wordpress-yu51a5/')
     dir_path_uploads = expanduser('~/Documents/Sites/Pages/uploads/')
     functions_images_data = expanduser('~/Documents/Sites/pinboard-child/functions_images_data.php')
+    
+    remove_yu_h(file_path)
     
 #     _, filenames = get_filenames(dir_path = dir_path_uploads5)
 #     _cover = [nu for nu in filenames if ("_cover." in nu)]
@@ -253,58 +267,60 @@ if __name__ == '__main__':
 #                                       result = imgheights)
 #     sort_count_occurances(a_list = [int(r) for r in imgheights])  
 #     
-    images_in_code = []
-    run_function_recursively_on_lines(dir_path = dir_path_wp, 
-                                      recursive_func_for_lines = return_all_images, result = images_in_code, one_line = True)
-    images_in_code.sort(key = lambda i:i['filename'])
-    print_one_more = False
-    prev_record = {'filename' : None}
-    dupe_filenames = set()
-    for im in images_in_code:
-        if (prev_record['filename'] == im['filename']) and (prev_record != im):
-            dupe_filenames.add(prev_record['filename'])
-        prev_record = im
-    print(dupe_filenames)
-     
-    errors = []   
-    for im in images_in_code:
-        if not im["id"] != (not(im["src"])):
-            errors.append(im['filename'] + ' id src mismatch ' + str(im))
-        if im["sourcehrf"] and  (not(im["sourcename"])):
-            errors.append(im['filename'] + ' id sourcehrf sourcename ' + str(im))
-        if (not im["sourcename"]) != (not (not(im["src"]))) and im["sourcename"] is not None:
-            errors.append(im['filename'] + ' id src sourcename ' + str(im))
-    for e in errors:
-        print(e)      
-        
-    ah = ['sotheb', 'bonham', 'christi', 'yogaoutlet']
-    ah_herf = []
-    auction_filenames = []    
-    for im in images_in_code:
-        if im["sourcehrf"]:
-            for a in ah:
-                if a in im["sourcehrf"].lower():
-                    ah_herf.append(im["sourcehrf"])
-                    auction_filenames.append(im['filename'])
-    ah_herf.sort()
-    for a in ah_herf:
-        print(a)
-    
-    for_php = []
-    dont_do = (list(auction_filenames) + list(dupe_filenames))
-    for im in images_in_code: 
-        if im['filename'] in dont_do:
-            continue
-        new_php = params_to_php(im)
-        for_php.append(new_php)
-    for im in images_in_code: 
-        if im['filename'] in dont_do:
-            new_php = params_to_php(im)
-            for_php.append(new_php)
-    append_to_file(functions_images_data, for_php)
-    for im in images_in_code:
-        run_function_recursively_on_lines(dir_path = dir_path_wp, recursive_func_for_lines = replace_substr, 
-                                          new_substr = im['new_all'], old_substr = im['all'], one_line = True)
+    #===========================================================================
+    # images_in_code = []
+    # run_function_recursively_on_lines(dir_path = dir_path_wp, 
+    #                                   recursive_func_for_lines = return_all_images, result = images_in_code, one_line = True)
+    # images_in_code.sort(key = lambda i:i['filename'])
+    # print_one_more = False
+    # prev_record = {'filename' : None}
+    # dupe_filenames = set()
+    # for im in images_in_code:
+    #     if (prev_record['filename'] == im['filename']) and (prev_record != im):
+    #         dupe_filenames.add(prev_record['filename'])
+    #     prev_record = im
+    # print(dupe_filenames)
+    #  
+    # errors = []   
+    # for im in images_in_code:
+    #     if not im["id"] != (not(im["src"])):
+    #         errors.append(im['filename'] + ' id src mismatch ' + str(im))
+    #     if im["sourcehrf"] and  (not(im["sourcename"])):
+    #         errors.append(im['filename'] + ' id sourcehrf sourcename ' + str(im))
+    #     if (not im["sourcename"]) != (not (not(im["src"]))) and im["sourcename"] is not None:
+    #         errors.append(im['filename'] + ' id src sourcename ' + str(im))
+    # for e in errors:
+    #     print(e)      
+    #     
+    # ah = ['sotheb', 'bonham', 'christi', 'yogaoutlet']
+    # ah_herf = []
+    # auction_filenames = []    
+    # for im in images_in_code:
+    #     if im["sourcehrf"]:
+    #         for a in ah:
+    #             if a in im["sourcehrf"].lower():
+    #                 ah_herf.append(im["sourcehrf"])
+    #                 auction_filenames.append(im['filename'])
+    # ah_herf.sort()
+    # for a in ah_herf:
+    #     print(a)
+    # 
+    # for_php = []
+    # dont_do = (list(auction_filenames) + list(dupe_filenames))
+    # for im in images_in_code: 
+    #     if im['filename'] in dont_do:
+    #         continue
+    #     new_php = params_to_php(im)
+    #     for_php.append(new_php)
+    # for im in images_in_code: 
+    #     if im['filename'] in dont_do:
+    #         new_php = params_to_php(im)
+    #         for_php.append(new_php)
+    # append_to_file(functions_images_data, for_php)
+    # for im in images_in_code:
+    #     run_function_recursively_on_lines(dir_path = dir_path_wp, recursive_func_for_lines = replace_substr, 
+    #                                       new_substr = im['new_all'], old_substr = im['all'], one_line = True)
+    #===========================================================================
 
         
          
