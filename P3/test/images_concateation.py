@@ -21,7 +21,6 @@ def add_url_if_necessary(filename, url_path):
 def filename_to_image(filename):
     # download the image, convert it to a NumPy array, and then read
     # it into OpenCV format
-    print(filename)
     if is_in_user_folder(filename):
         image = cv2.imread(filename)
     else:
@@ -29,9 +28,7 @@ def filename_to_image(filename):
         request = urllib.request.Request(url, headers=headers)
         resp = urllib.request.urlopen(request).read()
         image = numpy.asarray(bytearray(resp), dtype="uint8")
-        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    
-    print(image.shape) 
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR) 
     # return the image
     return image
 
@@ -77,13 +74,9 @@ def save_image(filename, image):
     #cv2.imshow('img-windows', image)
     #cv2.waitKey(0)
     filename_path = os.path.expanduser('~/Desktop/' + filename + '.jpg')
-    print(filename_path)
     cv2.imwrite(filename_path, image, [int(cv2.IMWRITE_JPEG_QUALITY), IMWRITE_JPEG_QUALITY])        
 
 def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = DEFAULT_WIDTH_WHITE_PC):   
-    for im2 in images:
-        for im1 in im2:
-            print(im1.shape)
     new_images = size_same(images,     height_not_width=horizontally_not_vertically, crop_not_scale=False)
     if same_images_size:
         new_images = size_same(new_images, height_not_width=(not horizontally_not_vertically), crop_not_scale=True)
@@ -141,20 +134,15 @@ def crop_concatenate_resize(urls, filename, cropped_size, final_width):
 
 def make_image_grid(filenames, result_filename, default_url, shrink_size = DEFAULT_SHRINK_SIZE):
     filenames_with_path = [[add_url_if_necessary(fn, default_url) for fn in fns] for fns in all_fns]
-    print(filenames_with_path)
     images = [[filename_to_image(fn) for fn in fns] for fns in filenames_with_path]
     big_images = [concatenate_images(images_row, 
                                      horizontally_not_vertically = True, 
                                      same_images_size = True) for images_row in images]
-    print('big_images ' + str(len(big_images)))
     big_image_2 = concatenate_images(big_images, 
                                      horizontally_not_vertically = False, 
                                      same_images_size = False)
-    print('big_image_2 ' + str(len(big_image_2)))
     final_image = shrink(big_image_2, DEFAULT_SHRINK_SIZE)
-    print('final_image ' + result_filename)
     save_image(filename = result_filename, image = final_image) 
-    print('done ')
 
 if __name__ == '__main__':
     
