@@ -1,19 +1,37 @@
+import codecs
+import re, sys
 import numpy, cv2, os
 import urllib.request
-import codecs
-import re
 
 headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
 IMWRITE_JPEG_QUALITY = 95
+DEFAULT_WIDTH_WHITE_PC = .02
+DEFAULT_SHRINK_SIZE = 1200
+
+def is_in_user_folder(filename):
+    return filename.startswith(os.path.expanduser('~/'))
+
+def add_url_if_necessary(filename, url_path):
+    if is_in_user_folder(filename):
+        return filename
+    if filename.startswith('http'):
+        return filename
+    return url_path + filename
  
-def url_to_image(url):
+def filename_to_image(filename):
     # download the image, convert it to a NumPy array, and then read
     # it into OpenCV format
-    request = urllib.request.Request(url, headers=headers)
-    resp = urllib.request.urlopen(request).read()
-    image = numpy.asarray(bytearray(resp), dtype="uint8")
-    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
- 
+    print(filename)
+    if is_in_user_folder(filename):
+        image = cv2.imread(filename)
+    else:
+        url = filename
+        request = urllib.request.Request(url, headers=headers)
+        resp = urllib.request.urlopen(request).read()
+        image = numpy.asarray(bytearray(resp), dtype="uint8")
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    
+    print(image.shape) 
     # return the image
     return image
 
@@ -62,7 +80,10 @@ def save_image(filename, image):
     print(filename_path)
     cv2.imwrite(filename_path, image, [int(cv2.IMWRITE_JPEG_QUALITY), IMWRITE_JPEG_QUALITY])        
 
-def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = .02):   
+def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = DEFAULT_WIDTH_WHITE_PC):   
+    for im2 in images:
+        for im1 in im2:
+            print(im1.shape)
     new_images = size_same(images,     height_not_width=horizontally_not_vertically, crop_not_scale=False)
     if same_images_size:
         new_images = size_same(new_images, height_not_width=(not horizontally_not_vertically), crop_not_scale=True)
@@ -113,12 +134,33 @@ def shrink(image, max_width = -1, max_height = -1):
     return new_image
 
 def crop_concatenate_resize(urls, filename, cropped_size, final_width):
-    cropped_images = [image_crop_square(img = url_to_image(url), new_size = cropped_size) for url in urls]      
+    cropped_images = [image_crop_square(img = filename_to_image(url), new_size = cropped_size) for url in urls]      
     big_image = concatenate_images(cropped_images, horizontally_not_vertically = True, same_images_size = True, width_white_pc = 0)  
     small = shrink(image = big_image, max_width = final_width)    
-    save_image(filename, small)       
+    save_image(filename, small)      
+
+def make_image_grid(filenames, result_filename, default_url, shrink_size = DEFAULT_SHRINK_SIZE):
+    filenames_with_path = [[add_url_if_necessary(fn, default_url) for fn in fns] for fns in all_fns]
+    print(filenames_with_path)
+    images = [[filename_to_image(fn) for fn in fns] for fns in filenames_with_path]
+    big_images = [concatenate_images(images_row, 
+                                     horizontally_not_vertically = True, 
+                                     same_images_size = True) for images_row in images]
+    print('big_images ' + str(len(big_images)))
+    big_image_2 = concatenate_images(big_images, 
+                                     horizontally_not_vertically = False, 
+                                     same_images_size = False)
+    print('big_image_2 ' + str(len(big_image_2)))
+    final_image = shrink(big_image_2, DEFAULT_SHRINK_SIZE)
+    print('final_image ' + result_filename)
+    save_image(filename = result_filename, image = final_image) 
+    print('done ')
 
 if __name__ == '__main__':
+    
+    
+
+
     mfas = [# [950, "http://mfas3.s3.amazonaws.com/objects/SC246818.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246819.jpg", "stater-of-taras-tarentum-with-horse-and-rider-struck-under-philokles-955"], 
             # [950, "http://mfas3.s3.amazonaws.com/objects/SC246826.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246827.jpg", "stater-of-taras-tarentum-with-horse-and-rider-struck-under-aristokles-960"], 
             # [950, "http://mfas3.s3.amazonaws.com/objects/SC246810.jpg", "http://mfas3.s3.amazonaws.com/objects/SC246811.jpg", "stater-of-taras-tarentum-with-horse-and-rider-951"], 
@@ -147,52 +189,52 @@ if __name__ == '__main__':
     # for mfa in mfas:
     #    crop_concatenate_resize(urls = mfa[1:-1], filename = mfa[-1], cropped_size = mfa[0], final_width = 1024)
     
-#     all_fns = [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
-#                ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
-#                ['KK_6025_01.jpg', 'KK_6754_01.jpg', 'KK_6753_01.jpg', 'KK_6020_13168.jpg']]
-#     big_images = [concatenate_images([url_to_image('http://www.yu51a5.com/wp-content/uploads/horsemen/' + fn) for fn in fns], 
-#                                      horizontally_not_vertically = True, 
-#                                      same_images_size = True) for fns in all_fns]
-#     big_image_2 = concatenate_images(big_images, 
-#                                      horizontally_not_vertically = False, 
-#                                      same_images_size = False)
-#     final_image = shrink(big_image_2, 800)
-# 
-#     save_image(filename = 'headlessHorsemen', image = final_image)
-#     ids = [18202573, 18201481]# , 18204280, 18201471, 18236941, 18236949, 18230064, 18219808, 18236701, 18201473, 18204280, 18204280,
-#     # 18232830, 18220883, 18250418, 18236701, 18201363, 18201547, 18201832, 18201843, 18206785, 18202573, 18231792]
-#     for id in ids:
-#         url_beginning = 'https://ikmk.smb.museum/image/' + str(id) + '/'
-#         urls = [url_beginning + 'vs_exp.jpg', url_beginning + 'rs_exp.jpg']
-#         double_image_big = concatenate_images([url_to_image(a_url) for a_url in urls], 
-#                                               horizontally_not_vertically = True, 
-#                                               same_images_size = False)
-#         double_image = shrink(double_image_big, max_width=1024)
-#         save_image(filename = 'ikmk_coin_' + str(id), image = double_image)
-#         print('insert_into_images("horsemen/ikmk_coin_{:n}.jpg", \n\
-#                             "ikmk", \n\
-#                             "{:n}", \n\
-#                             " showing  on horseback on reverse, <br/>minted in  under , Roman Republic Empire");'.format(id, id));
+    # all_fns = [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
+    #            ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
+    #            ['KK_6025_01.jpg', 'KK_6754_01.jpg', 'KK_6753_01.jpg', 'KK_6020_13168.jpg']]
+    # cover_filename = 'headlessHorsemen'
+    all_fns = [ [os.path.expanduser('~/Desktop/Screenshot 2020-04-20 at 21.51.48.png')], 
+                ['7818_Kelly-Tan-iPhone-Photos-9_w1120.jpg']]
+    cover_filename = 'motivation'
 
-    file_path = os.path.expanduser('~/Downloads/Officers Expense Claim Form/Sheet1.html')                      
-    my_encoding = 'utf-8'
-    with codecs.open(file_path, encoding = my_encoding) as file_opened:
-        file_contents = file_opened.read()
-               
-    n=1             
-    for match in re.finditer(pattern = 'img src=\'(.*?)[\'\;]', string = file_contents): #/\<img src=/
-        a_url = match.group(1)
-        print(a_url)
-          
-        try:
-            an_image = url_to_image(a_url)
-            print('ok')
-        except:
-            print('---NOT OK')
-        if n<10:
-            str_n = '0' + str(n)
-        else:
-            str_n = str(n)
-        save_image(filename = 'mensa_expenses_' + str_n, image = an_image)
-        n=n + 1
+    make_image_grid(filenames = all_fns, 
+                    result_filename = 'horsemen_' + cover_filename + '_cover', 
+                    default_url = 'http://www.yu51a5.org/wp-content/uploads/horsemen/')
+
+    # ids = [18207157] 18202573, 18201481]# , 18204280, 18201471, 18236941, 18236949, 18230064, 18219808, 18236701, 18201473, 18204280, 18204280,
+    # 18232830, 18220883, 18250418, 18236701, 18201363, 18201547, 18201832, 18201843, 18206785, 18202573, 18231792]
+    # for id in ids:
+    #     url_beginning = 'https://ikmk.smb.museum/image/' + str(id) + '/'
+    #     urls = [url_beginning + 'vs_exp.jpg', url_beginning + 'rs_exp.jpg']
+    #     double_image_big = concatenate_images([filename_to_image(a_url) for a_url in urls], 
+    #                                           horizontally_not_vertically = True, 
+    #                                           same_images_size = False)
+    #     double_image = shrink(double_image_big, max_width=1024)
+    #     save_image(filename = 'ikmk_coin_' + str(id), image = double_image)
+    #     print('insert_into_images("horsemen/ikmk_coin_{:n}.jpg", \n\
+    #                         "ikmk", \n\
+    #                         "{:n}", \n\
+    #                         " showing  on horseback on reverse, <br/>minted in  under , Roman Republic Empire");'.format(id, id));
+
+#     file_path = os.path.expanduser('~/Downloads/Officers Expense Claim Form/Sheet1.html')                      
+#     my_encoding = 'utf-8'
+#     with codecs.open(file_path, encoding = my_encoding) as file_opened:
+#         file_contents = file_opened.read()
+#                
+#     n=1             
+#     for match in re.finditer(pattern = 'img src=\'(.*?)[\'\;]', string = file_contents): #/\<img src=/
+#         a_url = match.group(1)
+#         print(a_url)
+#           
+#         try:
+#             an_image = url_to_image(a_url)
+#             print('ok')
+#         except:
+#             print('---NOT OK')
+#         if n<10:
+#             str_n = '0' + str(n)
+#         else:
+#             str_n = str(n)
+#         save_image(filename = 'mensa_expenses_' + str_n, image = an_image)
+#         n=n + 1
 
