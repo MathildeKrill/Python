@@ -1,4 +1,4 @@
-import enchant
+#import enchant
 from functools import total_ordering
 from string import ascii_lowercase
 

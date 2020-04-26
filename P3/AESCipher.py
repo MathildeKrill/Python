@@ -2,7 +2,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Util import Counter
 import inspect
-import os
+import os 
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 

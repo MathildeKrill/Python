@@ -1,0 +1,293 @@
+
+cd ~/opencv/build/; cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local/bin/python3 -D PYTHON3_EXECUTABLE=/Users/yuliavoevodskaya/.virtualenvs/cv/bin/python -D PYTHON3_PACKAGES_PATH=~/.virtualenvs/cv/lib/python3.6/site-packages -D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/bin -D PYTHON3_INCLUDE_DIR=/usr/local/Frameworks/Python.framework/Versions/3.6/Headers -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D BUILD_EXAMPLES=OFF -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules ..
+    
+(cv) Yulias-MacBook-Pro:bin yuliavoevodskaya$ cd ~/opencv/build/; cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local/bin/python3 -D PYTHON3_EXECUTABLE=/Users/yuliavoevodskaya/.virtualenvs/cv/bin/python -D PYTHON3_PACKAGES_PATH=~/.virtualenvs/cv/lib/python3.6/site-packages -D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/bin -D PYTHON3_INCLUDE_DIR=/usr/local/Frameworks/Python.framework/Versions/3.6/Headers -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D BUILD_EXAMPLES=OFF -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules ..
+CMake Deprecation Warning at CMakeLists.txt:72 (cmake_policy):
+  The OLD behavior for policy CMP0022 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+CMake Deprecation Warning at CMakeLists.txt:77 (cmake_policy):
+  The OLD behavior for policy CMP0026 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- Checking for module 'gstreamer-base-1.0'
+--   No package 'gstreamer-base-1.0' found
+-- Checking for module 'gstreamer-video-1.0'
+--   No package 'gstreamer-video-1.0' found
+-- Checking for module 'gstreamer-app-1.0'
+--   No package 'gstreamer-app-1.0' found
+-- Checking for module 'gstreamer-riff-1.0'
+--   No package 'gstreamer-riff-1.0' found
+-- Checking for module 'gstreamer-pbutils-1.0'
+--   No package 'gstreamer-pbutils-1.0' found
+-- Checking for module 'gstreamer-base-0.10'
+--   No package 'gstreamer-base-0.10' found
+-- Checking for module 'gstreamer-video-0.10'
+--   No package 'gstreamer-video-0.10' found
+-- Checking for module 'gstreamer-app-0.10'
+--   No package 'gstreamer-app-0.10' found
+-- Checking for module 'gstreamer-riff-0.10'
+--   No package 'gstreamer-riff-0.10' found
+-- Checking for module 'gstreamer-pbutils-0.10'
+--   No package 'gstreamer-pbutils-0.10' found
+-- Checking for module 'libdc1394-2'
+--   No package 'libdc1394-2' found
+-- Checking for module 'libdc1394'
+--   No package 'libdc1394' found
+-- Checking for module 'libv4l1'
+--   No package 'libv4l1' found
+-- Checking for module 'libv4l2'
+--   No package 'libv4l2' found
+-- Looking for linux/videodev.h
+-- Looking for linux/videodev.h - not found
+-- Looking for linux/videodev2.h
+-- Looking for linux/videodev2.h - not found
+-- Looking for sys/videoio.h
+-- Looking for sys/videoio.h - not found
+-- Checking for module 'libavcodec'
+--   No package 'libavcodec' found
+-- Checking for module 'libavformat'
+--   No package 'libavformat' found
+-- Checking for module 'libavutil'
+--   No package 'libavutil' found
+-- Checking for module 'libswscale'
+--   No package 'libswscale' found
+-- Checking for module 'libavresample'
+--   No package 'libavresample' found
+-- Looking for libavformat/avformat.h
+-- Looking for libavformat/avformat.h - not found
+-- Looking for ffmpeg/avformat.h
+-- Looking for ffmpeg/avformat.h - not found
+-- Checking for module 'libgphoto2'
+--   No package 'libgphoto2' found
+-- found IPP (ICV version): 9.0.1 [9.0.1]
+-- at: /Users/yuliavoevodskaya/opencv/3rdparty/ippicv/unpack/ippicv_osx
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- To enable PlantUML support, set PLANTUML_JAR environment variable or pass -DPLANTUML_JAR=<filepath> option to cmake
+-- Found PythonInterp: /usr/local/bin/python2.7 (found suitable version "2.7.10", minimum required is "2.7") 
+-- Found PythonLibs: /usr/local/Cellar/python/2.7.10/Frameworks/Python.framework/Versions/2.7/bin (Required is exact version "2.7.10") 
+-- Found PythonInterp: /Users/yuliavoevodskaya/.virtualenvs/cv/bin/python (found suitable version "3.6.2", minimum required is "3.4") 
+-- Found PythonLibs: /usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/bin (found suitable exact version "3.6.2") 
+-- Could NOT find Matlab (missing: MATLAB_MEX_SCRIPT MATLAB_INCLUDE_DIRS MATLAB_ROOT_DIR MATLAB_LIBRARIES MATLAB_LIBRARY_DIRS MATLAB_MEXEXT MATLAB_ARCH MATLAB_BIN) 
+-- VTK is not found. Please set -DVTK_DIR in CMake to VTK build directory, or to VTK install subdirectory with VTKConfig.cmake file
+-- Caffe:   NO
+-- Protobuf:   NO
+-- Glog:   NO
+-- Could NOT find HDF5 (missing: HDF5_LIBRARIES HDF5_INCLUDE_DIRS) 
+-- Module opencv_sfm disabled because the following dependencies are not found: Glog/Gflags
+-- Tesseract:   NO
+-- Assume that non-module dependency is available: -framework OpenCL (for module opencv_core)
+-- Could NOT find Protobuf (missing: Protobuf_LIBRARIES Protobuf_INCLUDE_DIR) 
+-- Build libprotobuf from sources:
+--     libprotobuf not found into system
+--     The protocol buffer compiler not found
+-- Tesseract:   NO
+CMake Error at samples/gpu/CMakeLists.txt:100 (list):
+  list sub-command REMOVE_ITEM requires list to be present.
+
+
+-- 
+-- General configuration for OpenCV 3.1.0 =====================================
+--   Version control:               3.1.0
+-- 
+--   Platform:
+--     Host:                        Darwin 15.6.0 x86_64
+--     CMake:                       3.9.0
+--     CMake generator:             Unix Makefiles
+--     CMake build tool:            /usr/bin/make
+--     Configuration:               RELEASE
+-- 
+--   C/C++:
+--     Built as dynamic libs?:      YES
+--     C++ Compiler:                /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  (ver 8.0.0.8000038)
+--     C++ flags (Release):         -fsigned-char -W -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -Qunused-arguments -Wno-semicolon-before-method-body -fno-omit-frame-pointer -msse -msse2 -mno-avx -msse3 -mno-ssse3 -mno-sse4.1 -mno-sse4.2 -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
+--     C++ flags (Debug):           -fsigned-char -W -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -Qunused-arguments -Wno-semicolon-before-method-body -fno-omit-frame-pointer -msse -msse2 -mno-avx -msse3 -mno-ssse3 -mno-sse4.1 -mno-sse4.2 -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
+--     C Compiler:                  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
+--     C flags (Release):           -fsigned-char -W -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -Qunused-arguments -Wno-semicolon-before-method-body -fno-omit-frame-pointer -msse -msse2 -mno-avx -msse3 -mno-ssse3 -mno-sse4.1 -mno-sse4.2 -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
+--     C flags (Debug):             -fsigned-char -W -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wno-narrowing -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -fdiagnostics-show-option -Wno-long-long -Qunused-arguments -Wno-semicolon-before-method-body -fno-omit-frame-pointer -msse -msse2 -mno-avx -msse3 -mno-ssse3 -mno-sse4.1 -mno-sse4.2 -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
+--     Linker flags (Release):
+--     Linker flags (Debug):
+--     Precompiled headers:         NO
+--     Extra dependencies:          -framework OpenCL -framework Cocoa -framework QTKit -framework QuartzCore -framework AppKit
+--     3rdparty dependencies:       libjpeg libwebp libpng libtiff libjasper IlmImf zlib libprotobuf
+-- 
+--   OpenCV modules:
+--     To be built:                 core flann imgproc ml photo reg surface_matching video dnn fuzzy imgcodecs shape videoio highgui objdetect plot superres ts xobjdetect xphoto bgsegm bioinspired dpm face features2d line_descriptor saliency text calib3d ccalib datasets rgbd stereo structured_light tracking videostab xfeatures2d ximgproc aruco optflow stitching python2 python3
+--     Disabled:                    world contrib_world
+--     Disabled by dependency:      -
+--     Unavailable:                 cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev java viz cvv hdf matlab sfm
+-- 
+--   GUI: 
+--     QT:                          NO
+--     Cocoa:                       YES
+--     OpenGL support:              NO
+--     VTK support:                 NO
+-- 
+--   Media I/O: 
+--     ZLib:                        build (ver 1.2.8)
+--     JPEG:                        build (ver 90)
+--     WEBP:                        build (ver 0.3.1)
+--     PNG:                         build (ver 1.6.19)
+--     TIFF:                        build (ver 42 - 4.0.2)
+--     JPEG 2000:                   build (ver 1.900.1)
+--     OpenEXR:                     build (ver 1.7.1)
+--     GDAL:                        NO
+-- 
+--   Video I/O:
+--     DC1394 1.x:                  NO
+--     DC1394 2.x:                  NO
+--     FFMPEG:                      NO
+--       codec:                     NO
+--       format:                    NO
+--       util:                      NO
+--       swscale:                   NO
+--       resample:                  NO
+--       gentoo-style:              NO
+--     GStreamer:                   NO
+--     OpenNI:                      NO
+--     OpenNI PrimeSensor Modules:  NO
+--     OpenNI2:                     NO
+--     PvAPI:                       NO
+--     GigEVisionSDK:               NO
+--     QuickTime:                   NO
+--     QTKit:                       YES
+--     V4L/V4L2:                    NO/NO
+--     XIMEA:                       NO
+--     gPhoto2:                     NO
+-- 
+--   Parallel framework:            GCD
+-- 
+--   Other third-party libraries:
+--     Use IPP:                     9.0.1 [9.0.1]
+--          at:                     /Users/yuliavoevodskaya/opencv/3rdparty/ippicv/unpack/ippicv_osx
+--     Use IPP Async:               NO
+--     Use VA:                      NO
+--     Use Intel VA-API/OpenCL:     NO
+--     Use Eigen:                   YES (ver 3.3.4)
+--     Use Cuda:                    NO
+--     Use OpenCL:                  YES
+--     Use custom HAL:              NO
+-- 
+--   OpenCL:
+--     Version:                     static
+--     libraries:                   -framework OpenCL
+--     Use AMDFFT:                  NO
+--     Use AMDBLAS:                 NO
+-- 
+--   Python 2:
+--     Interpreter:                 /usr/local/bin/python2.7 (ver 2.7.10)
+--     Libraries:                   /usr/local/Cellar/python/2.7.10/Frameworks/Python.framework/Versions/2.7/bin
+--     numpy:                       /Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/core/include (ver 1.9.2)
+--     packages path:               /Users/yuliavoevodskaya/.virtualenvs/cv/lib/python2.7/site-packages
+-- 
+--   Python 3:
+--     Interpreter:                 /Users/yuliavoevodskaya/.virtualenvs/cv/bin/python (ver 3.6.2)
+--     Libraries:                   /usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/bin (ver 3.6.2)
+--     numpy:                       /Users/yuliavoevodskaya/.virtualenvs/cv/lib/python3.6/site-packages/numpy/core/include (ver 1.13.1)
+--     packages path:               /Users/yuliavoevodskaya/.virtualenvs/cv/lib/python3.6/site-packages
+-- 
+--   Python (for build):            /usr/local/bin/python2.7
+-- 
+--   Java:
+--     ant:                         NO
+--     JNI:                         /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks/JavaVM.framework/Headers /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks/JavaVM.framework/Headers /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks/JavaVM.framework/Headers
+--     Java wrappers:               NO
+--     Java tests:                  NO
+-- 
+--   Matlab:                        Matlab not found or implicitly disabled
+-- 
+--   Documentation:
+--     Doxygen:                     NO
+--     PlantUML:                    NO
+-- 
+--   Tests and samples:
+--     Tests:                       YES
+--     Performance tests:           YES
+--     C/C++ Examples:              NO
+-- 
+--   Install path:                  /usr/local/bin/python3
+-- 
+--   cvconfig.h is in:              /Users/yuliavoevodskaya/opencv/build
+-- -----------------------------------------------------------------
+(cv) Yulias-MacBook-Pro:build yuliavoevodskaya$ 
+
+cd ~/opencv/build/;  cmake -D CMAKE_BUILD_TYPE=RELEASE \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D PYTHON3_EXECUTABLE=/usr/local/bin/python3 \
+-D PYTHON3_PACKAGES_PATH=~/.virtualenvs/cv/lib/python3.6/site-packages \
+-D PYTHON3_LIBRARY= \
+-D PYTHON3_INCLUDE_DIR= \
+-D INSTALL_C_EXAMPLES=ON \
+-D INSTALL_PYTHON_EXAMPLES=ON \
+-D BUILD_EXAMPLES=OFF \
+-D OPENCV_EXTRA_MODULES_PATH~=/../../opencv_contrib/modules ..
+
+
+
+cd ~/opencv/build/; cmake -D CMAKE_BUILD_TYPE=RELEASE \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+-D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/lib/python3.6/config-3.6m-darwin/libpython3.6.dylib \
+-D PYTHON3_INCLUDE_DIR= \
+-D PYTHON3_EXECUTABLE=$VIRTUAL_ENV/bin/python \
+-D BUILD_opencv_python2=OFF \
+-D BUILD_opencv_python3=ON \
+-D INSTALL_PYTHON_EXAMPLES=ON \
+-D INSTALL_C_EXAMPLES=OFF -D BUILD_EXAMPLES=ON ..
+
+    -D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/python3.5/config-3.5m/libpython3.5.dylib \
+    -D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/lib/python3.6/config-3.6m-darwin/libpython3.6.dylib \
+    -D PYTHON3_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/include/python3.6m/ \
+    -D PYTHON3_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/include/python3.5m/ \
+
+PYTHON3_LIBRARY PYTHON3_INCLUDE_DIR
+
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D WITH_QUICKTIME=OFF -D WITH_QT=OFF -D WITH_GSTREAMER=OFF -D WITH_FFMPEG=OFF -D CMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D PYTHON3_LIBRARY=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/lib/python3.6/config-3.6m-darwin/libpython3.6.dylib \
+    -D PYTHON3_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/include/python3.6m/ \
+    -D PYTHON3_EXECUTABLE=$VIRTUAL_ENV/bin/python3 \
+    -D PYTHON3_PACKAGES_PATH=$VIRTUAL_ENV/lib/python3.6/site-packages \
+    -D BUILD_opencv_python2=OFF \
+    -D BUILD_opencv_python3=ON \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D INSTALL_C_EXAMPLES=OFF \
+    -D BUILD_EXAMPLES=ON ..
+    
+    cmake  -DCMAKE_BUILD_TYPE=Release ..
+    
+[ 53%] Built target opencv_photo
+[ 53%] Building CXX object modules/videoio/CMakeFiles/opencv_videoio.dir/src/cap_mjpeg_decoder.cpp.o
+[ 53%] Building CXX object modules/videoio/CMakeFiles/opencv_videoio.dir/src/cap_qtkit.mm.o
+[ 53%] Building CXX object modules/shape/CMakeFiles/opencv_shape.dir/src/sc_dis.cpp.o
+[ 53%] Building CXX object modules/shape/CMakeFiles/opencv_shape.dir/src/tps_trans.cpp.o   
+/Users/yuliavoevodskaya/opencv/modules/videoio/src/cap_qtkit.mm:46:9: fatal error: 
+      'QTKit/QTKit.h' file not found
+#import <QTKit/QTKit.h>
+
+[ 28%] Built target opencv_shape
+[ 28%] Building CXX object modules/dnn/CMakeFiles/opencv_dnn.dir/src/torch/THGeneral.cpp.o
+[ 28%] Building CXX object modules/dnn/CMakeFiles/opencv_dnn.dir/src/torch/torch_importer.cpp.o
+[ 28%] Building CXX object modules/dnn/CMakeFiles/opencv_dnn.dir/opencl_kernels_dnn.cpp.o
+[ 28%] Linking CXX shared library ../../lib/libopencv_dnn.dylib
+[ 28%] Built target opencv_dnn
+/Users/yuliavoevodskaya/opencv/modules/videoio/src/cap_qtkit.mm:46:9: fatal error: 
+      'QTKit/QTKit.h' file not found
+#import <QTKit/QTKit.h>
+
+
+   

@@ -10,6 +10,8 @@ and the last digit is moved in front of the number, it increases factor-fold
 from decimal import Decimal
 import decimal 
 import sys
+import os, cv2 #,  opencv
+
 
 MAX_POWER = 100
 MAX_ERROR = 1E-16
@@ -46,23 +48,7 @@ def find_a_b(base, factor, pow, errors):
 if __name__ == '__main__':
     
     print(sys.version)
+    print(sys.executable)
+    print(cv2.__version__)
     
-    base = 10
-    factor = 2
-    
-    pow = Decimal(1)
-    decimal.getcontext().prec = MAX_POWER + 2
-    res_so_far = 1
-    errors = []
-    print 
-    for i in range(MAX_POWER):
-        if res_so_far == factor:
-            print('POWER = ' + str(i))
-            find_a_b(base = base, factor = factor, pow = pow, errors = errors)
-        res_so_far = (res_so_far * base) % (base * factor -1)
-        pow *= base
-    if len(errors):
-        print("ERRORS:")
-    for e in errors:
-        print(e)
-    
+    print("all done")

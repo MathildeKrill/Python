@@ -42,7 +42,7 @@ if __name__ == '__main__':
 #                   description_intro = ['', 'Colloquial Persian by Abdi Rafiee', 'Intended for personal use. I own the book.', ''],
 #                   dry_run = True)
 # 
-    dirs = [ 'iTunes/iTunes Media/Music/Hodder Arnold/Mandarin Chinese • Foundation Course/' + str(i) for i in range(3, 9)
+    dirs = [ 'iTunes/iTunes Media/Music/Michel Thomas Method/Mandarin Chinese IV/' + str(i) for i in range(9, 11)
              #'iTunes/iTunes Media/Music/Michael Thomas/Total Mandarin Chinese 1', 
              #'iTunes/iTunes Media/Music/Michel Thomas Method/Total • Mandarin Chinese'
              #'Yiru/Yiruma - River Flows In You (2011)', 'Yiru/Yiruma - Piano (2015)', 'Yiru/Yiruma - Blind Film (2013)', 
