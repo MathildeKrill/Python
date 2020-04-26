@@ -202,17 +202,6 @@ if __name__ == '__main__':
                ['Equestrian_portrait_of_Alexis_of_Russia_17_c_GIM.jpg','Allegory_of_the_Victory_at_Poltava._Apotheosis_of_Peter_I.jpg','0_113499_f752414e_orig.jpg']
                ]
     cover_filename = 'part3'
-    all_fns = [[,,],
-               [,,],
-               [,,],
-               [,,],
-               [,,],
-               [,,],
-               [,,],
-               [,,],
-               ]
-    cover_filename = ''
-    """
     
     all_fns = [['aabar-harema.jpg','AN00032649_001_l.jpg','AN00313723_001_l.jpg'],
                ['AN00431083_001_l-1.jpg','20131205_Istanbul_106.jpg','Tetradrachm_Evagoras_II_368-346BC.jpg'],
@@ -231,7 +220,43 @@ if __name__ == '__main__':
                ['B_Valladolid_93.jpg','Second_Horseman_Battistero_di_Padova.jpg','John_Hamilton_Mortimer_-_Death_on_a_Pale_Horse_-_Google_Art_Project.jpg'],
                ]
     cover_filename = 'part1'
+
+    all_fns = [[,,],
+               [,,],
+               [,,],
+               [,,],
+               [,,],
+               [,,],
+               [,,],
+               [,,],
+               ]
+    cover_filename = ''
+    """    
     
+    all_fns = [['tapisserie_de_bayeux_1.png'],
+               ['Regisole_di_V._Brunelli_1817.jpeg', 'Roger_II_Sicily.jpg','E075166.jpg'],
+               ['Villani_Benevento.jpg','Azzo_di_Masetto_-_Tournament_and_Hunting_Scenes_-_Google_Art_Project_cropped.jpg','Rene_dAnjou_Livre_des_tournois.jpg'],
+               ['Codex_Manesse_Der_wilde_Alexander_f412r.jpg','Hart_Hunting.jpg','Battle_of_Agincourt_St_Albans_Chronicle_by_Thomas_Walsingham.jpg'],
+               ['Jerusalem_1999.png','683566.jpg','B_Valladolid_93.jpg'],
+               ['12th-century_unknown_painters_-_Hunt_of_the_Hare_-_WGA19758.jpg','Higueruela.jpg','Derzs4.jpg'],
+               ['george_dragon_relief_panel_ma_hi.jpg','Andres_Marzal_De_Sax_-_Retable_of_St_George_detail_-_WGA14171.jpg','Retaule_de_sant_Jordi_de_Xerica.jpeg'],
+               ['george_stockholm.jpg','St._George_and_the_Dragon_by_Tilman_Riemenschneider_c._1490-1495_linden_wood_-_Bode-Museum_-_DSC03599.jpg','Meester_van_het_Mechelse_Sint-Jorisgilde_-_De_leden_van_het_gilde_van_de_grote_kruisboog_te_Mechelen_ca.1500_-_kmska_28-02-2010_13-43-37.jpg'],
+               ['04-511162.jpg','AN00038779_001_l.jpg','Budapest_Rearing_Horse.png'],
+               ['Hunt_in_the_forest_by_paolo_uccello.jpg'],
+               ['96-004222.jpg','Botticelli_Prado_103.jpg','VirginiaBotticelli.jpg'],
+               ['Maitre_des_Cassoni_Campana-_prise_dAthenes.jpg','Piero_della_Francesca_021.jpg','Raphael_-_Heliodore_chasse_du_Temple.jpg'],
+               ['Battle_of_the_Milvian_Bridge_by_Giulio_Romano_1520-24.jpg'],
+               ['Excellente_Cronyke_van_Vlaenderen_fol_372v.jpg','Lucas_Cranach_crucifixion.jpg','couple-on-horseback.jpgHD_.jpg'],
+               ['Turkish_Horseman_with_sabre.jpg','AN00088491_001_l.jpg','Arte_De_Athletica_V2_4a.jpg'],
+               ['Veronese.Marcus_Curtius01.jpg','MORION_Christies.png','Faenza_Bergantini_22019.jpg'],
+               ['charlesV_CL-scaled.jpg','charles5.jpg','863px-Carlos_V_en_Muehlberg_by_Titian_from_Prado_in_Google_Earth.jpg'],
+               ['DP857126.jpg','RP-P-1948-328-scaled.jpg','AN00134115_001_l.jpg'],
+               ['AN00123029_001_l.jpg','Philip_de_Lalaing_Count_of_Hoogstraten_by_Hans_Liefrinck_I_before_1550.jpg','7b16450958a3ef2b014e52d64a66cfe8.jpg'],
+               ['Cavaliere.jpg','warrior.jpg','CarlosII_Mesina.png'],
+               ['DP159385.jpg','1971.61.jpg','DP107142.jpg']
+               ]
+    cover_filename = 'part2'
+        
     make_image_grid(filenames = all_fns, 
                     result_filename = 'horsemen_' + cover_filename + '_cover', 
                     default_url = 'http://www.yu51a5.org/wp-content/uploads/horsemen/')
