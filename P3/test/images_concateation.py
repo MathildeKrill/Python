@@ -70,6 +70,7 @@ def size_same(images, height_not_width, crop_not_scale=False):
 
 def create_image(height, width):
     new_image = numpy.zeros((int(height), int(width), 3), numpy.uint8)
+    new_image.fill(255)
     return new_image
 
 def save_image(filename, image):
@@ -79,6 +80,15 @@ def save_image(filename, image):
     cv2.imwrite(filename_path, image, [int(cv2.IMWRITE_JPEG_QUALITY), IMWRITE_JPEG_QUALITY])        
 
 def concatenate_images(images, horizontally_not_vertically, same_images_size, width_white_pc = DEFAULT_WIDTH_WHITE_PC):   
+    if len(images) == 0:
+        if horizontally_not_vertically:
+            height = DEFAULT_SHRINK_SIZE * DEFAULT_WIDTH_WHITE_PC
+            width = DEFAULT_SHRINK_SIZE
+        else:
+            height = DEFAULT_SHRINK_SIZE
+            width = DEFAULT_SHRINK_SIZE * DEFAULT_WIDTH_WHITE_PC
+        new_image = create_image(height, width)
+        return new_image
     new_images = size_same(images,     height_not_width=horizontally_not_vertically, crop_not_scale=False)
     if same_images_size:
         new_images = size_same(new_images, height_not_width=(not horizontally_not_vertically), crop_not_scale=True)
@@ -101,7 +111,6 @@ def concatenate_images(images, horizontally_not_vertically, same_images_size, wi
         big_image = create_image(same_size, total_new_size)
     else:
         big_image = create_image(total_new_size, same_size)        
-    big_image.fill(255)
     
     counter=0
     for image in new_images:
@@ -145,8 +154,22 @@ def make_image_grid(filenames, result_filename, default_url, shrink_size = DEFAU
     save_image(filename = result_filename, image = final_image) 
 
 if __name__ == '__main__':
-
     covers_data = { 
+           'cliches' :[        
+                        ['04-007446.jpg','WOA_IMAGE_const.jpg','143a7046fb3354a9333dea57a8b82377.jpg'],
+                        ['Pierre_Mignard_-_Ludwig_XVI._zu_Pferde_-_hi_res_1200dpi.jpg','2006BB2180_jpg_l.jpg','864px-Buffi_-_Equestrian_portrait_of_Marie_Jeanne_of_Savoy-Nemours_-_Palazzo_Madama.jpg'],
+                        ['Frederik_Hendrik_and_Maurits_as_generals_by_Thomas_Willeboirts_Bosschaert.jpg', 'John_Churchill_1st_Duke_of_Marlborough_by_Sir_Godfrey_Kneller_Bt_2.jpg','Johann_Gottfried_Tannauer_03.jpg'],
+                        [],
+                        ['20493560.jpeg', 'AN00134115_001_l.jpg', 'DP857126.jpg'], 
+                        ['henri_iv_roi_de_france_bd.jpg', '850px-Velazquez_-_Principe_Baltasar_Carlos_Museo_del_Prado_1634-35.jpg', 'August_der_Starke.jpg'],
+                        ['bonhams.jpeg', '841px-Sir_Joshua_Reynolds_-_Sir_Jeffrey_Amherst_-_Google_Art_Project.jpg', 'Francisco_de_Goya_-_Retrato_ecuestre_de_Fernando_VII_-_Google_Art_Project.jpg']
+            ]
+        #  '2010s' : [
+        #             ['macron_guardian.jpg', 'four_horsewomen-1.jpg'],
+        #             ['Macedonia_Square_Skopje_NMK.jpg', 'Shivaji-Poster-1.jpg'],
+        #             ['iStock-614121224.jpg', '784-7845670_deadpool-clipart-sticker-cutting-deadpool-riding-a-unicorn.jpg'],
+        #             ['Insta_Lannister.jpg', 'elsa_water_horse.jpg']
+        #            ],
         # 'headlessHorsemen' : 
         #         [['AN00149889_001_l.jpg', 'AN00150545_001_l.jpg', 'AN00150544_001_l.jpg'],
         #         ['AN00472211_001_l.jpg', 'AN00472213_001_l.jpg'],
@@ -192,17 +215,17 @@ if __name__ == '__main__':
         #         ['King_John_hunting_-_Statutes_of_England_14th_C_f.116_-_BL_Cotton_MS_Claudius_D_II.jpg', 'Gaston_Phoebus_2.jpg'],
         #         ['Hunt_in_the_forest_by_paolo_uccello.jpg']
         #         ],
-        'part3' :
-                [['DP159385.jpg','1971.61.jpg','DP107142.jpg'],
-                ['499182.jpg','776px-Count-Duke_of_Olivares.jpg','850px-Rubens_-_San_Jorge_y_el_Dragon_Museo_del_Prado_1605.jpg'],
-                ['Santiago_Matamoro_Cordoba_Spain.jpeg','7P5M2591.jpg','83K97084.jpg'],
-                ['Gonzales_Coques_-_An_equestrian_portrait_of_an_elegant_gentleman_and_lady_in_a_wooded_landscape.jpg','1275px-Peter_Paul_Rubens_110.jpg','La_Bataille_dIssus_-_Jan_Brueghel.jpeg'],
-                ['Louis_XIII_Richelieu_devant_La_Rochelle.jpg','Madame_La_Comtesse_de_Saint_Geran.jpg','866px-Jacques_Louis_David_-_Bonaparte_franchissant_le_Grand_Saint-Bernard_20_mai_1800_-_Google_Art_Project.jpg'],
-                ['August_der_Starke.jpg','augustus-iii.jpg','fig.-3-archduke-maximilian-ii-emanuel-of-baveria-by-roger-schabol-signed-and-dated-1707-after-a-design-by-desjardin-1.jpg'],
-                ['Leopold_V_Archduke_of_Austria_-_Innsbruck.jpg','KK_968_12844.jpg','KK_4663_57604.jpg'],
-                ['167167-1297701516.jpg','James_Scott.jpg','673px-Britain_Needs_You_at_Once_-_WWI_recruitment_poster_-_Parliamentary_Recruiting_Committee_Poster_No._108.jpg'],
-                ['Equestrian_portrait_of_Alexis_of_Russia_17_c_GIM.jpg','Allegory_of_the_Victory_at_Poltava._Apotheosis_of_Peter_I.jpg','0_113499_f752414e_orig.jpg']
-                ],
+        # 'part3' :
+        #         [['DP159385.jpg','1971.61.jpg','DP107142.jpg'],
+        #         ['499182.jpg','776px-Count-Duke_of_Olivares.jpg','850px-Rubens_-_San_Jorge_y_el_Dragon_Museo_del_Prado_1605.jpg'],
+        #         ['Santiago_Matamoro_Cordoba_Spain.jpeg','7P5M2591.jpg','83K97084.jpg'],
+        #         ['Gonzales_Coques_-_An_equestrian_portrait_of_an_elegant_gentleman_and_lady_in_a_wooded_landscape.jpg','1275px-Peter_Paul_Rubens_110.jpg','La_Bataille_dIssus_-_Jan_Brueghel.jpeg'],
+        #         ['Louis_XIII_Richelieu_devant_La_Rochelle.jpg','Madame_La_Comtesse_de_Saint_Geran.jpg','866px-Jacques_Louis_David_-_Bonaparte_franchissant_le_Grand_Saint-Bernard_20_mai_1800_-_Google_Art_Project.jpg'],
+        #         ['August_der_Starke.jpg','augustus-iii.jpg','fig.-3-archduke-maximilian-ii-emanuel-of-baveria-by-roger-schabol-signed-and-dated-1707-after-a-design-by-desjardin-1.jpg'],
+        #         ['Leopold_V_Archduke_of_Austria_-_Innsbruck.jpg','KK_968_12844.jpg','KK_4663_57604.jpg'],
+        #         ['167167-1297701516.jpg','James_Scott.jpg','673px-Britain_Needs_You_at_Once_-_WWI_recruitment_poster_-_Parliamentary_Recruiting_Committee_Poster_No._108.jpg'],
+        #         ['Equestrian_portrait_of_Alexis_of_Russia_17_c_GIM.jpg','Allegory_of_the_Victory_at_Poltava._Apotheosis_of_Peter_I.jpg','0_113499_f752414e_orig.jpg']
+        #         ],
         # 'part1' :
         #         [['aabar-harema.jpg','AN00032649_001_l.jpg','AN00313723_001_l.jpg'],
         #         ['AN00431083_001_l-1.jpg','20131205_Istanbul_106.jpg','Tetradrachm_Evagoras_II_368-346BC.jpg'],
@@ -220,27 +243,27 @@ if __name__ == '__main__':
         #         ['Susenyos_Wellcome_L0031387_cropped.jpg','Yuhanna-Mercurius.jpg','The_death_of_Absalom6.jpg'],
         #         ['B_Valladolid_93.jpg','Second_Horseman_Battistero_di_Padova.jpg','John_Hamilton_Mortimer_-_Death_on_a_Pale_Horse_-_Google_Art_Project.jpg']
         #         ],
-        'part2' :
-               [['tapisserie_de_bayeux_1.png'],
-               ['Roger_II_Sicily.jpg','E075166.jpg', 'Codex_Manesse_Heinrich_von_Breslau.jpg'],
-               ['Villani_Benevento.jpg','Azzo_di_Masetto_-_Tournament_and_Hunting_Scenes_-_Google_Art_Project_cropped.jpg','Rene_dAnjou_Livre_des_tournois.jpg'],
-               ['VaclavGelnhausenovekodexu.jpg','Alexander-the-Great.png','Battle_of_Agincourt_St_Albans_Chronicle_by_Thomas_Walsingham.jpg'],
-               ['Jerusalem_1999.png','683566.jpg','B_Valladolid_93.jpg'],
-               [os.path.expanduser('~/Downloads/12th-century.jpg'),'Higueruela.jpg','Derzs4.jpg'],
-               ['george_dragon_relief_panel_ma_hi.jpg','Andres_Marzal_De_Sax_-_Retable_of_St_George_detail_-_WGA14171.jpg','Retaule_de_sant_Jordi_de_Xerica.jpeg'],
-               ['george_stockholm.jpg','St._George_and_the_Dragon_by_Tilman_Riemenschneider_c._1490-1495_linden_wood_-_Bode-Museum_-_DSC03599.jpg','Meester_van_het_Mechelse_Sint-Jorisgilde_-_De_leden_van_het_gilde_van_de_grote_kruisboog_te_Mechelen_ca.1500_-_kmska_28-02-2010_13-43-37.jpg'],
-               ['Hunt_in_the_forest_by_paolo_uccello.jpg'],
-               ['96-004222.jpg','Botticelli_Prado_103.jpg','VirginiaBotticelli.jpg'],
-               ['Maitre_des_Cassoni_Campana-_prise_dAthenes.jpg','Piero_della_Francesca_021.jpg','Raphael_-_Heliodore_chasse_du_Temple.jpg'],
-               ['Battle_of_the_Milvian_Bridge_by_Giulio_Romano_1520-24.jpg'],
-               ['Excellente_Cronyke_van_Vlaenderen_fol_372v.jpg','Lucas_Cranach_crucifixion.jpg','couple-on-horseback.jpgHD_.jpg'],
-               ['Turkish_Horseman_with_sabre.jpg','AN00088491_001_l.jpg','Arte_De_Athletica_V2_4a.jpg'],
-               ['Veronese.Marcus_Curtius01.jpg','MORION_Christies.png','Faenza_Bergantini_22019.jpg'],
-               ['charlesV_CL-scaled.jpg','charles5.jpg','863px-Carlos_V_en_Muehlberg_by_Titian_from_Prado_in_Google_Earth.jpg'],
-               ['DP857126.jpg','RP-P-1948-328-scaled.jpg','AN00134115_001_l.jpg'],
-               ['AN00123029_001_l.jpg','Philip_de_Lalaing_Count_of_Hoogstraten_by_Hans_Liefrinck_I_before_1550.jpg','7b16450958a3ef2b014e52d64a66cfe8.jpg'],
-               ['Cavaliere.jpg','warrior.jpg','CarlosII_Mesina.png']
-               ],
+        # 'part2' :
+        #        [['tapisserie_de_bayeux_1.png'],
+        #        ['Roger_II_Sicily.jpg','E075166.jpg', 'Codex_Manesse_Heinrich_von_Breslau.jpg'],
+        #        ['Villani_Benevento.jpg','Azzo_di_Masetto_-_Tournament_and_Hunting_Scenes_-_Google_Art_Project_cropped.jpg','Rene_dAnjou_Livre_des_tournois.jpg'],
+        #        ['VaclavGelnhausenovekodexu.jpg','Alexander-the-Great.png','Battle_of_Agincourt_St_Albans_Chronicle_by_Thomas_Walsingham.jpg'],
+        #        ['Jerusalem_1999.png','683566.jpg','B_Valladolid_93.jpg'],
+        #        [os.path.expanduser('~/Downloads/12th-century.jpg'),'Higueruela.jpg','Derzs4.jpg'],
+        #        ['george_dragon_relief_panel_ma_hi.jpg','Andres_Marzal_De_Sax_-_Retable_of_St_George_detail_-_WGA14171.jpg','Retaule_de_sant_Jordi_de_Xerica.jpeg'],
+        #        ['george_stockholm.jpg','St._George_and_the_Dragon_by_Tilman_Riemenschneider_c._1490-1495_linden_wood_-_Bode-Museum_-_DSC03599.jpg','Meester_van_het_Mechelse_Sint-Jorisgilde_-_De_leden_van_het_gilde_van_de_grote_kruisboog_te_Mechelen_ca.1500_-_kmska_28-02-2010_13-43-37.jpg'],
+        #        ['Hunt_in_the_forest_by_paolo_uccello.jpg'],
+        #        ['96-004222.jpg','Botticelli_Prado_103.jpg','VirginiaBotticelli.jpg'],
+        #        ['Maitre_des_Cassoni_Campana-_prise_dAthenes.jpg','Piero_della_Francesca_021.jpg','Raphael_-_Heliodore_chasse_du_Temple.jpg'],
+        #        ['Battle_of_the_Milvian_Bridge_by_Giulio_Romano_1520-24.jpg'],
+        #        ['Excellente_Cronyke_van_Vlaenderen_fol_372v.jpg','Lucas_Cranach_crucifixion.jpg','couple-on-horseback.jpgHD_.jpg'],
+        #        ['Turkish_Horseman_with_sabre.jpg','AN00088491_001_l.jpg','Arte_De_Athletica_V2_4a.jpg'],
+        #        ['Veronese.Marcus_Curtius01.jpg','MORION_Christies.png','Faenza_Bergantini_22019.jpg'],
+        #        ['charlesV_CL-scaled.jpg','charles5.jpg','863px-Carlos_V_en_Muehlberg_by_Titian_from_Prado_in_Google_Earth.jpg'],
+        #        ['DP857126.jpg','RP-P-1948-328-scaled.jpg','AN00134115_001_l.jpg'],
+        #        ['AN00123029_001_l.jpg','Philip_de_Lalaing_Count_of_Hoogstraten_by_Hans_Liefrinck_I_before_1550.jpg','7b16450958a3ef2b014e52d64a66cfe8.jpg'],
+        #        ['Cavaliere.jpg','warrior.jpg','CarlosII_Mesina.png']
+        #        ],
         # 'part4' :
         #       [['1024px-Jackson_Statue_in_DC.jpg','1024px-Erzherzog_Karl_Heldenplatz_Wien_1.jpg','Bolivarperu.jpeg'],
         #        ['Sint-Joris_-_by_frank_wouters.jpg','Slovakia-03212_-_St._George_32288601125.jpg','UN_GoodDefeats-Evil_StGeorge.jpg'],
