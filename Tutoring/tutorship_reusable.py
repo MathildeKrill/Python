@@ -43,7 +43,7 @@ def plt_envelope(func_to_call, save_file = True, add_grid = True, **kwargs):
         for c in ['-', ' ', '.', ':']:
             now = now.replace(c, '_')
         # put together a filename and its path
-        filename_with_path = os.path.expanduser('~/Documents/Python/Tutoring/Images/matlibplot' + now + '.jpg')
+        filename_with_path = os.path.expanduser('~/Documents/Python/Tutoring/Images/matlibplot' + now + '.png')
         plt.savefig(filename_with_path)    
 
     plt.show() # show! 
