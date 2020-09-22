@@ -24,18 +24,26 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
     except:
         conclusion = "This is not a number!"                         # if the solution was not a number, show an error msg
     return (what_are_we_looking_for + " is " + str(correct_solution) + solution_units_to_use,
-            "User solution is " + str(user_solution_string) + solution_units_to_use, 
+            "Student solution is " + str(user_solution_string) + solution_units_to_use, 
             conclusion)
 
 # this function returns the filename of the saved figure if we save it,
 #            it returns None if we don't save it             
-def plt_envelope(func_to_call, save_file = True, add_grid = True, **kwargs):
+def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_object = None, **kwargs):
     plt.close()
     _, ax = plt.subplots()                     # create the figure
+
     func_to_call(ax = ax, **kwargs)    
 
     if add_grid:
-        ax.grid(True, which='both')                # add a grid                    
+        ax.grid(True, which='both')                # add a grid    
+
+    if solution_object is not None:
+        if solution_object['show_solutions']:
+            label_friendly_solutions = []
+            for solution in solution_object['solutions']:     
+                label_friendly_solutions.append(solution[0] + " is " + str(solution[1]) + solution[2])
+            plt.title('\n'.join(label_friendly_solutions))           
 
     if save_file:
         # generate timestamp for the filename to make it unique
@@ -47,6 +55,15 @@ def plt_envelope(func_to_call, save_file = True, add_grid = True, **kwargs):
         plt.savefig(filename_with_path)    
 
     plt.show() # show! 
+
+    if solution_object is not None:
+        if not solution_object['show_solutions']:
+            for solution in solution_object['solutions']:
+                quiz_result = check_quiz_solution(what_are_we_looking_for = solution[0], 
+                                                  correct_solution = solution[1], 
+                                                  solution_units = solution[2])
+                print('\n'.join(quiz_result))
+
     return filename_with_path
 
 def plot_point(ax, x, y, colour = '', marker = '', annotiation = '', do_projections = True, tolerance = 0.0001):
