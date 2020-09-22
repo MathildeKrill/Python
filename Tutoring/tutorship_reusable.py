@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
+from datetime import datetime
+import os
 
 def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_units = None, tolerance = 0.0001):
     question = "What is " + what_are_we_looking_for                  # put together the quesion
@@ -25,6 +27,38 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
             "User solution is " + str(user_solution_string) + solution_units_to_use, 
             conclusion)
 
+# this function returns the filename of the saved figure if we save it,
+#            it returns None if we don't save it             
+def plt_envelope(func_to_call, save_file = True, add_grid = True, **kwargs):
+    plt.close()
+    _, ax = plt.subplots()                     # create the figure
+    func_to_call(ax = ax, **kwargs)    
+
+    if add_grid:
+        ax.grid(True, which='both')                # add a grid                    
+
+    if save_file:
+        # generate timestamp for the filename to make it unique
+        now = str(datetime.now())
+        for c in ['-', ' ', '.', ':']:
+            now = now.replace(c, '_')
+        # put together a filename and its path
+        filename_with_path = os.path.expanduser('~/Documents/Python/Tutoring/Images/matlibplot' + now + '.jpg')
+        plt.savefig(filename_with_path)    
+
+    plt.show() # show! 
+    return filename_with_path
+
+def plot_point(ax, x, y, colour = '', marker = '', annotiation = '', do_projections = True, tolerance = 0.0001):
+    ax.plot([x], [y], colour + marker)
+    annotation_label = annotiation + " (" + str(x) + ", " + str(y) + ")"
+    ax.annotate(annotation_label, (x, y))
+    if (abs(x) > tolerance) and (abs(y) > tolerance) and do_projections:
+        plot_point(ax, x, 0, colour = colour, marker = marker, annotiation = annotiation + '_X')
+        plot_point(ax, 0, y, colour = colour, marker = marker, annotiation = annotiation + '_Y')
+
+
+plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o')
 
 def create_vertical_arrow(arrow_x, 
                           arrowhead_width, # not used
