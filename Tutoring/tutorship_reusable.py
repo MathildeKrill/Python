@@ -31,7 +31,9 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
 #            it returns None if we don't save it             
 def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_object = None, **kwargs):
     plt.close()
-    _, ax = plt.subplots()                     # create the figure
+
+    fig = plt.figure(figsize = (5, 5), dpi = 300) # create the figure
+    ax = fig.add_subplot(111)                      
 
     func_to_call(ax = ax, **kwargs)    
 
@@ -69,13 +71,13 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_obje
 def plot_point(ax, x, y, colour = '', marker = '', annotiation = '', do_projections = True, tolerance = 0.0001):
     ax.plot([x], [y], colour + marker)
     annotation_label = annotiation + " (" + str(x) + ", " + str(y) + ")"
-    ax.annotate(annotation_label, (x, y))
+    ax.annotate(annotation_label, (x, y), fontsize = 8)
     if (abs(x) > tolerance) and (abs(y) > tolerance) and do_projections:
         plot_point(ax, x, 0, colour = colour, marker = marker, annotiation = annotiation + '_X')
         plot_point(ax, 0, y, colour = colour, marker = marker, annotiation = annotiation + '_Y')
 
 
-plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o')
+#plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o')
 
 def create_vertical_arrow(arrow_x, 
                           arrowhead_width, # not used
