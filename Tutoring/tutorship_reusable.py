@@ -33,7 +33,16 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_obje
     plt.close()
 
     fig = plt.figure(figsize = (5, 5), dpi = 300) # create the figure
-    ax = fig.add_subplot(111)                      
+    ax = fig.add_subplot(111)
+
+    for spine_id in ['left', 'bottom']:
+        ax.spines[spine_id].set_position('zero')
+        ax.spines[spine_id].set_smart_bounds(True)
+    for spine_id in ['right', 'top']:
+        ax.spines[spine_id].set_color('none')
+
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')                     
 
     func_to_call(ax = ax, **kwargs)    
 
