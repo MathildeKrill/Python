@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
+import matplotlib.ticker as mticker
 from datetime import datetime
 import os
 
@@ -22,9 +23,13 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
         else:
             conclusion = "Unfortunately this is incorrect."          # otherwise better luck next time
     except:
-        conclusion = "This is not a number!"                         # if the solution was not a number, show an error msg
+        if (user_solution_string == ""):
+            conclusion = "You are not even trying!"                  # if the solution is empty, show an error msg
+            user_solution_string = "empty"
+        else:
+            conclusion = "This is not a number!"                     # if the solution was not a number, show an error msg
     return (what_are_we_looking_for + " is " + str(correct_solution) + solution_units_to_use,
-            "Student solution is " + str(user_solution_string) + solution_units_to_use, 
+            "Your solution is " + user_solution_string + solution_units_to_use, 
             conclusion)
 
 # this function returns the filename of the saved figure if we save it,
@@ -47,14 +52,16 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_obje
     func_to_call(ax = ax, **kwargs)    
 
     if add_grid:
-        ax.grid(True, which='both')                # add a grid    
+        ax.grid(True, which='both')                # add a grid   
 
     if solution_object is not None:
         if solution_object['show_solutions']:
             label_friendly_solutions = []
             for solution in solution_object['solutions']:     
                 label_friendly_solutions.append(solution[0] + " is " + str(solution[1]) + solution[2])
-            plt.title('\n'.join(label_friendly_solutions))           
+            plt.title('\n'.join(label_friendly_solutions)) 
+
+    plt.tight_layout()          
 
     if save_file:
         # generate timestamp for the filename to make it unique
@@ -77,16 +84,31 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_obje
 
     return filename_with_path
 
-def plot_point(ax, x, y, colour = '', marker = '', annotiation = '', do_projections = True, tolerance = 0.0001):
-    ax.plot([x], [y], colour + marker)
-    annotation_label = annotiation + " (" + str(x) + ", " + str(y) + ")"
-    ax.annotate(annotation_label, (x, y), fontsize = 8)
+def plot_point(ax, x, y, colour = '', marker = '', annotiation = '', 
+               show_coords = True, do_projections = True, do_lines = False,
+               tolerance = 0.0001):
     if (abs(x) > tolerance) and (abs(y) > tolerance) and do_projections:
+        if do_lines:
+            ax.plot([x, x], [0, y], colour + ':', linewidth = 3)  
+            ax.plot([0, x], [y, y], colour + ':', linewidth = 3)  
         plot_point(ax, x, 0, colour = colour, marker = marker, annotiation = annotiation + '_X')
         plot_point(ax, 0, y, colour = colour, marker = marker, annotiation = annotiation + '_Y')
+    ax.plot([x], [y], colour + marker)
+    annotation_label = annotiation 
+    if show_coords:
+        annotation_label += " (" + str(x) + ", " + str(y) + ")"
+    ax.annotate(annotation_label, (x, y), fontsize = 8)
 
+def plot_grid(ax, x, y):
+    for _x, _y in [[x, y], [-x, y], [x, -y], [-x, -y]]:
+        plot_point(ax, _x, _y, show_coords = False, do_projections = False)
+    loc = mticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
+    ax.xaxis.set_major_locator(loc)
+    ax.yaxis.set_major_locator(loc)
 
-#plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o')
+plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o', do_lines = True)
+plt_envelope(plot_grid, x = 10, y = 10, add_grid = True)
+
 
 def create_vertical_arrow(arrow_x, 
                           arrowhead_width, # not used
