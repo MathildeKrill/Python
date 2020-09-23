@@ -9,7 +9,7 @@ import os
 
 def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_units = None, tolerance = 0.0001):
     question = "What is " + what_are_we_looking_for                  # put together the quesion
-    if solution_units is not None:
+    if (solution_units is not None) and (solution_units != ""):
         solution_units_to_use = " " + solution_units
         question += " (in " + solution_units + ")"
     else: 
@@ -34,10 +34,13 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
 
 # this function returns the filename of the saved figure if we save it,
 #            it returns None if we don't save it             
-def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_object = None, **kwargs):
+def plt_envelope(func_to_call, save_file = True, add_grid = False, 
+                 figsize = (5, 5), dpi = 300, 
+                 solution_object = None, 
+                 **kwargs):
     plt.close()
 
-    fig = plt.figure(figsize = (5, 5), dpi = 300) # create the figure
+    fig = plt.figure(figsize = figsize, dpi = dpi) # create the figure
     ax = fig.add_subplot(111)
 
     for spine_id in ['left', 'bottom']:
@@ -57,8 +60,11 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False, solution_obje
     if solution_object is not None:
         if solution_object['show_solutions']:
             label_friendly_solutions = []
-            for solution in solution_object['solutions']:     
-                label_friendly_solutions.append(solution[0] + " is " + str(solution[1]) + solution[2])
+            for solution in solution_object['solutions']: 
+                solution_sentence = solution[0] + " is " + str(solution[1])
+                if len(solution) > 2:
+                    solution_sentence += solution[2]
+                label_friendly_solutions.append(solution_sentence)
             plt.title('\n'.join(label_friendly_solutions)) 
 
     plt.tight_layout()          
@@ -106,9 +112,8 @@ def plot_grid(ax, x, y):
     ax.xaxis.set_major_locator(loc)
     ax.yaxis.set_major_locator(loc)
 
-plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o', do_lines = True)
-plt_envelope(plot_grid, x = 10, y = 10, add_grid = True)
-
+# plt_envelope(plot_point, x = 1, y = 2, annotiation = 'A', colour = 'r', marker = 'o', do_lines = True)
+# plt_envelope(plot_grid, x = 10, y = 10, add_grid = True)
 
 def create_vertical_arrow(arrow_x, 
                           arrowhead_width, # not used
