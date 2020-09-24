@@ -52,8 +52,8 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
 
 # this function returns the filename of the saved figure if we save it,
 #            it returns None if we don't save it             
-def plt_envelope(func_to_call, save_file = True, add_grid = False, 
-                 figsize = (5, 5), dpi = 300, x_tick_step = None, y_tick_step = None,
+def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False, 
+                 x_tick_step = 1.0, y_tick_step = 1.0,
                  solution_object = None, title_addon = None, tolerance = 0.0001,
                  **kwargs):
             
@@ -82,10 +82,11 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False,
             ax.set_xlim(right = right_x)
         ax.spines['bottom'].set_bounds(left_x, right_x)
         ax.set_xlim(left_x, right_x)
-        x_ticks = []
-        ax.xticks(x_ticks)
         loc_x = mticker.MultipleLocator(base=x_tick_step) # this locator puts ticks at regular intervals
         ax.xaxis.set_major_locator(loc_x)
+        loc_x.set_bounds(vmin = left_x, vmax = right_x)
+        # x_ticks = []
+        # ax.set_xticks(x_ticks)
 
         # make sure 1s are included in 0Y
         bottom_y, top_y = ax.get_ylim()  # return the current ylim
@@ -97,12 +98,11 @@ def plt_envelope(func_to_call, save_file = True, add_grid = False,
             ax.set_ylim(top = top_y)
         ax.spines['left'].set_bounds(bottom_y, top_y)
         ax.set_ylim(bottom_y, top_y)
-        y_ticks = []
-        ax.yticks(y_ticks)
         loc_y = mticker.MultipleLocator(base=y_tick_step) # this locator puts ticks at regular intervals
         ax.yaxis.set_major_locator(loc_y)
+        loc_y.set_bounds(vmin = bottom_y, vmax = top_y)
 
-        ax.grid(add_grid, which='both', xdata=x_ticks, ydata=y_ticks)  # add a grid   
+        ax.grid(add_grid, which='both')  # add a grid, xdata=x_ticks, ydata=y_ticks   
 
     if solution_object is not None:
         if solution_object['show_solutions']:
@@ -161,7 +161,7 @@ def plot_point(ax, x, y, colour = '', marker = '', annotiation = '',
     annotation_label = annotiation 
     if show_coords:
         annotation_label += " (" + str(x) + ", " + str(y) + ")"
-    ax.annotate(annotation_label, (x, y), fontsize = 8)
+    ax.annotate(annotation_label, (x, y))
 
 def plot_grid(ax, x, y):
     for _x, _y in [[x, y], [-x, y], [x, -y], [-x, -y]]:
