@@ -29,7 +29,7 @@ def check_quiz_solution(what_are_we_looking_for, correct_solution, solution_unit
     try:                                                             # if the solution is a the right format
         correct = False
         if isinstance(correct_solution, str):
-            if correct_solution == user_solution_number:
+            if correct_solution == user_solution_string:
                 correct = True
         else:
             user_solution_number = float(user_solution_string)
