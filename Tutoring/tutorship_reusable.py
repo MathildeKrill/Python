@@ -172,6 +172,13 @@ def plot_grid(ax, x, y):
 
 #plt_envelope(plot_grid, x = 10, y = 10, add_grid = True)
 
+def fill_in_outline(ax, outline, fill_in_colour):
+    path = mpath.Path(outline)                    # create the outline of the arrowhead
+    patch = mpatches.PathPatch(path, 
+                               fc = fill_in_colour, 
+                               ec = fill_in_colour)   # fill in the outline
+    ax.add_patch(patch)
+
 def create_vertical_arrow(arrow_x, 
                           arrowhead_width, # not used
                           arrowhead_tip_y, 
