@@ -81,13 +81,11 @@ def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False,
             right_x -= np.floor(left_x)
             ax.set_xlim(right = right_x)
         ax.spines['bottom'].set_bounds(left_x, right_x)
-        ax.set_xlim(left_x, right_x)
+        #ax.set_xlim(left_x, right_x)
         loc_x = mticker.MultipleLocator(base=x_tick_step) # this locator puts ticks at regular intervals
         ax.xaxis.set_major_locator(loc_x)
         loc_x.set_bounds(vmin = left_x, vmax = right_x)
-        # x_ticks = []
-        # ax.set_xticks(x_ticks)
-
+        
         # make sure 1s are included in 0Y
         bottom_y, top_y = ax.get_ylim()  # return the current ylim
         if bottom_y > 0:
@@ -97,12 +95,14 @@ def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False,
             top_y -= np.floor(top_y)
             ax.set_ylim(top = top_y)
         ax.spines['left'].set_bounds(bottom_y, top_y)
-        ax.set_ylim(bottom_y, top_y)
+        #ax.set_ylim(bottom_y, top_y)
         loc_y = mticker.MultipleLocator(base=y_tick_step) # this locator puts ticks at regular intervals
         ax.yaxis.set_major_locator(loc_y)
         loc_y.set_bounds(vmin = bottom_y, vmax = top_y)
 
-        ax.grid(add_grid, which='both')  # add a grid, xdata=x_ticks, ydata=y_ticks   
+        #xtick_locs, _ = plt.xticks()  
+        ax.grid(add_grid, which='both')#, xdata=xtick_locs, ydata=ax.get_yticks())  # add a grid 
+
 
     if solution_object is not None:
         if solution_object['show_solutions']:
