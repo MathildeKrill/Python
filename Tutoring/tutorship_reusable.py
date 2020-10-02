@@ -4,6 +4,7 @@ import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 import matplotlib.ticker as mticker
+from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 import os
 
@@ -209,3 +210,75 @@ def create_vertical_arrow(arrow_x,
     shaft = mlines.Line2D([arrow_x, arrow_x], [arrowhead_tip_y, end_shaft], color=colour_shaft) # create the line - shaft
     
     return arrowhead, shaft
+
+def draw_ruler(ax, min_x, nb_steps, size_step, big_bar_frequency, y_lim_small, y_lim_big):
+    ax.plot([min_x, min_x + nb_steps * size_step], [0, 0])              # add a horizontal line to the plot
+
+    for i in range(nb_steps + 1):                # create (nb_steps + 1) vertical bars,
+        x = min_x + i * size_step                # define where we put this vertical bar
+        x_bar = np.array([x, x])                 # define the vertical bar - X coords
+
+        y_lim = y_lim_small                      # this is the default size of the vertical bar
+        if (i % big_bar_frequency == 0):         # these bars will be longer
+            y_lim = y_lim_big     
+        y_bar = np.array([-y_lim, y_lim])        # define the vertical bar - Y coords
+
+        ax.plot(x_bar, y_bar)
+
+def draw_square(ax, min_x, min_y, length, fill_in_colour):
+
+    ax.set_aspect("equal")  
+
+    all_x = [min_x, min_x + length, min_x + length, min_x, min_x]
+    all_y = [min_y, min_y, min_y + length, min_y + length, min_y]
+    
+    for i in range(4):                          # plot the sides of our polygon
+        x_bar = np.array([all_x[i], all_x[i+1]])
+        y_bar = np.array([all_y[i], all_y[i+1]]) 
+        ax.plot(x_bar, y_bar, color = fill_in_colour, linewidth = 1)
+
+    if fill_in_colour is not None:
+        outline = [[x, y] for x, y in list(zip(all_x, all_y))]
+        fill_in_outline(ax, outline, fill_in_colour)
+
+def draw_squares(ax, min_x, min_y, nb_x, nb_y, length, fill_in_colour, gap = 0):
+    for i_x in range(nb_x):
+        _min_x = min_x + i_x * (length + gap)
+        for i_y in range(nb_y):
+            _min_y = min_y + i_y * (length + gap)
+            draw_square(ax, min_x = _min_x, min_y = _min_y, length = length, fill_in_colour = fill_in_colour)
+
+def cuboid_data(o, size=(1,1,1)):
+    # code taken from
+    # https://stackoverflow.com/a/35978146/4124317
+    # suppose axis direction: x: to left; y: to inside; z: to upper
+    # get the length, width, and height
+    l, w, h = size
+    x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  
+    y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+         [o[1], o[1], o[1] + w, o[1] + w, o[1]],  
+         [o[1], o[1], o[1], o[1], o[1]],          
+         [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]   
+    z = [[o[2], o[2], o[2], o[2], o[2]],                       
+         [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],   
+         [o[2], o[2], o[2] + h, o[2] + h, o[2]],               
+         [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
+    return np.array(x), np.array(y), np.array(z)
+
+def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+    # Plotting a cube element at position pos
+    if ax !=None:
+        X, Y, Z = cuboid_data( pos, size )
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+
+def axisEqual3D(ax):
+    extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    sz = extents[:,1] - extents[:,0]
+    centers = np.mean(extents, axis=1)
+    maxsize = max(abs(sz))
+    r = maxsize/2
+    for ctr, dim in zip(centers, 'xyz'):
+        getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
