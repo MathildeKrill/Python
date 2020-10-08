@@ -81,9 +81,7 @@ def draw_ruler(ax, min_x, nb_steps, size_step, big_bar_frequency, y_lim_small, y
 
         ax.plot(x_bar, y_bar)
 
-def draw_square(ax, min_x, min_y, length, fill_in_colour):
-
-    ax.set_aspect("equal")  
+def draw_square(ax, min_x, min_y, length, fill_in_colour): 
 
     all_x = [min_x, min_x + length, min_x + length, min_x, min_x]
     all_y = [min_y, min_y, min_y + length, min_y + length, min_y]

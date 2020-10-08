@@ -121,16 +121,33 @@ plt.rcParams.update({
     "font.size": 10
 })
 
-def axisEqual3D(ax):
-    extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
-    print(extents)
-    sz = extents[:,1] - extents[:,0]
-    print(sz)
-    centers = np.mean(extents, axis=1)
-    maxsize = max(abs(sz))
-    r = maxsize/2
-    for ctr, dim in zip(centers, 'xyz'):
-        getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
+def nice_axes(min_max_values_tick_freq, ax):
+    # find max_extent (used for 3D only, but quick to find)
+    max_extent = 0.
+    for _min_max_values_tick_freq in min_max_values_tick_freq.values():
+        extent = _min_max_values_tick_freq[1] - _min_max_values_tick_freq[0] 
+        if max_extent < extent:
+            max_extent = extent
+
+    for dim, _min_max_values_tick_freq in min_max_values_tick_freq.items():
+
+        # set the limits and make sure the aspects are equal
+        min_this_axis = _min_max_values_tick_freq[0]
+        max_this_axis = _min_max_values_tick_freq[1]
+        if len(min_max_values_tick_freq) > 2:     
+            # extend the limits for 3D because set_aspect("equal") is not implemented      
+            min_this_axis = (min_this_axis + max_this_axis - max_extent) * 0.5
+            max_this_axis = (min_this_axis + max_this_axis + max_extent) * 0.5
+        else:
+            ax.set_aspect("equal") 
+        getattr(ax, 'set_{}lim'.format(dim))(min_this_axis, max_this_axis)
+
+        # set ticks
+        freq_this_axis=1.0
+        if len(_min_max_values_tick_freq) > 2:
+            freq_this_axis = _min_max_values_tick_freq[2]
+        ticks_this_axis = np.arange(min_this_axis, max_this_axis, freq_this_axis)
+        getattr(ax, 'set_{}ticks'.format(dim))(ticks_this_axis)
 
 def run_animation(func_name, fargs, projection='rectilinear', figsize=(7, 7), nb_frames=10, interval=500):   
     fig = plt.figure(figsize=figsize)
