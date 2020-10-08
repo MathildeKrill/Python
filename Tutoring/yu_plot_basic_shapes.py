@@ -95,15 +95,6 @@ def draw_square(ax, min_x, min_y, length, fill_in_colour):
         outline = [[x, y] for x, y in list(zip(all_x, all_y))]
         fill_in_outline(ax, outline, fill_in_colour)
 
-def draw_squares(ax, min_x, min_y, nb_x, nb_y, length, fill_in_colour, gap = 0, skip_x = []):
-    for i_x in range(nb_x):
-        if i_x in skip_x:
-            continue
-        _min_x = min_x + i_x * (length + gap)
-        for i_y in range(nb_y):
-            _min_y = min_y + i_y * (length + gap)
-            draw_square(ax, min_x = _min_x, min_y = _min_y, length = length, fill_in_colour = fill_in_colour)
-
 def cuboid_data(o, size):
     # code taken from
     # https://stackoverflow.com/a/35978146/4124317
