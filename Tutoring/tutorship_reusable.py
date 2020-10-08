@@ -127,7 +127,7 @@ def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False,
         for c in ['-', ' ', '.', ':']:
             now = now.replace(c, '_')
         # put together a filename and its path
-        filename_with_path = os.path.expanduser('~/Documents/Python/Tutoring/Images/matlibplot' + now + '.jpg')
+        filename_with_path = os.path.expanduser('~/Documents/PythonImages/matlibplot' + now + '.jpg')
         plt.savefig(filename_with_path)  
     else:
         filename_with_path = None  
@@ -241,8 +241,10 @@ def draw_square(ax, min_x, min_y, length, fill_in_colour):
         outline = [[x, y] for x, y in list(zip(all_x, all_y))]
         fill_in_outline(ax, outline, fill_in_colour)
 
-def draw_squares(ax, min_x, min_y, nb_x, nb_y, length, fill_in_colour, gap = 0):
+def draw_squares(ax, min_x, min_y, nb_x, nb_y, length, fill_in_colour, gap = 0, skip_x = []):
     for i_x in range(nb_x):
+        if i_x in skip_x:
+            continue
         _min_x = min_x + i_x * (length + gap)
         for i_y in range(nb_y):
             _min_y = min_y + i_y * (length + gap)
