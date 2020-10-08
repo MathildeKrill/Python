@@ -113,11 +113,29 @@ def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False,
 
     return filename_with_path
 
+from matplotlib import rc
+from matplotlib import animation, rc
+from IPython.display import HTML
+rc('animation', html='jshtml')
+plt.rcParams.update({
+    "font.size": 10
+})
+
 def axisEqual3D(ax):
     extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    print(extents)
     sz = extents[:,1] - extents[:,0]
+    print(sz)
     centers = np.mean(extents, axis=1)
     maxsize = max(abs(sz))
     r = maxsize/2
     for ctr, dim in zip(centers, 'xyz'):
         getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
+
+def run_animation(func_name, fargs, projection='rectilinear', figsize=(7, 7), nb_frames=10, interval=500):   
+    fig = plt.figure(figsize=figsize)
+    ax = fig.gca(projection=projection)
+    nb_frames = nb_frames
+    anim = animation.FuncAnimation(fig, func_name, fargs=[ax, nb_frames] + fargs,
+                               frames=nb_frames, interval=interval)
+    return anim

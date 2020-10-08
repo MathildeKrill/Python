@@ -106,7 +106,7 @@ def draw_squares(ax, min_x, min_y, nb_x, nb_y, length, fill_in_colour, gap = 0, 
             _min_y = min_y + i_y * (length + gap)
             draw_square(ax, min_x = _min_x, min_y = _min_y, length = length, fill_in_colour = fill_in_colour)
 
-def cuboid_data(o, size=(1,1,1)):
+def cuboid_data(o, size):
     # code taken from
     # https://stackoverflow.com/a/35978146/4124317
     # suppose axis direction: x: to left; y: to inside; z: to upper
@@ -126,7 +126,7 @@ def cuboid_data(o, size=(1,1,1)):
          [o[2], o[2], o[2] + h, o[2] + h, o[2]]]               
     return np.array(x), np.array(y), np.array(z)
 
-def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwargs):
+def plotCubeAt(pos, size, ax, **kwargs):
     # Plotting a cube element at position pos
     X, Y, Z = cuboid_data( pos, size )
     ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
