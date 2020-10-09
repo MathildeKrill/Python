@@ -4,6 +4,7 @@ import matplotlib.ticker as mticker
 from datetime import datetime
 import os
 import yu_quiz
+import math
 
 plt.rcParams.update({
     "font.size": 5,
@@ -18,7 +19,7 @@ plt.rcParams.update({
 # this function returns the filename of the saved figure if we save it,
 #            it returns None if we don't save it             
 def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False, 
-                 x_tick_step = 1.0, y_tick_step = 1.0,
+                 tick_step = {'x' : 1.0, 'y' : 1.0},
                  solution_object = None, title_addon = None, tolerance = 0.0001,
                  **kwargs):
             
@@ -28,45 +29,29 @@ def plt_envelope(func_to_call, figsize, dpi, save_file = True, add_grid = False,
     func_to_call(ax = ax, **kwargs)    
 
     if add_grid: 
-        # do spines
-        for spine_id in ['left', 'bottom']:
-            ax.spines[spine_id].set_position('zero')
-            ax.spines[spine_id].set_smart_bounds(True)
+        # do spines      
         for spine_id in ['right', 'top']:
             ax.spines[spine_id].set_color('none')
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')                     
 
-        # make sure 0s are included in 0X
-        left_x, right_x = ax.get_xlim()  # return the current xlim
-        if left_x > 0:
-            left_x -= np.ceil(left_x)
-            ax.set_xlim(left = left_x)
-        if right_x < 0:
-            right_x -= np.floor(left_x)
-            ax.set_xlim(right = right_x)
-        ax.spines['bottom'].set_bounds(left_x, right_x)
-        #ax.set_xlim(left_x, right_x)
-        loc_x = mticker.MultipleLocator(base=x_tick_step) # this locator puts ticks at regular intervals
-        ax.xaxis.set_major_locator(loc_x)
-        loc_x.set_bounds(vmin = left_x, vmax = right_x)
-        
-        # make sure 1s are included in 0Y
-        bottom_y, top_y = ax.get_ylim()  # return the current ylim
-        if bottom_y > 0:
-            bottom_y -= np.ceil(bottom_y)
-            ax.set_ylim(bottom = bottom_y)
-        if top_y < 0:
-            top_y -= np.floor(top_y)
-            ax.set_ylim(top = top_y)
-        ax.spines['left'].set_bounds(bottom_y, top_y)
-        #ax.set_ylim(bottom_y, top_y)
-        loc_y = mticker.MultipleLocator(base=y_tick_step) # this locator puts ticks at regular intervals
-        ax.yaxis.set_major_locator(loc_y)
-        loc_y.set_bounds(vmin = bottom_y, vmax = top_y)
+        for spine_id, dim in [('bottom', 'x'), ('left', 'y')]:    
+                
+            low_bound, high_bound = getattr(ax, 'get_{}lim'.format(dim))()           
+            if low_bound > 0:
+                low_bound = 0
+            if high_bound < 0:
+                high_bound = 0
+            first_tick = math.floor(low_bound / tick_step[dim]) * tick_step[dim]
+            last_tick = math.ceil(high_bound / tick_step[dim]) * tick_step[dim]
 
-        #xtick_locs, _ = plt.xticks()  
-        ax.grid(add_grid, which='both')#, xdata=xtick_locs, ydata=ax.get_yticks())  # add a grid 
+            ax.spines[spine_id].set_position('zero')
+            ax.spines[spine_id].set_bounds(first_tick, last_tick)
+            ticks_this_axis = np.arange(first_tick, last_tick, tick_step[dim])
+            getattr(ax, 'set_{}ticks'.format(dim))(ticks_this_axis)
+            ax.spines[spine_id].set_bounds(first_tick, last_tick)
+
+            # getattr(ax, '{}axis.set_ticks_position'.format(dim))(spine_id)
+  
+        ax.grid(True)
 
 
     if solution_object is not None:
@@ -146,7 +131,9 @@ def nice_axes(min_max_values_tick_freq, ax):
         freq_this_axis=1.0
         if len(_min_max_values_tick_freq) > 2:
             freq_this_axis = _min_max_values_tick_freq[2]
-        ticks_this_axis = np.arange(min_this_axis, max_this_axis, freq_this_axis)
+        first_tick = math.floor(min_this_axis/freq_this_axis) * freq_this_axis
+        last_tick = math.ceil(max_this_axis/freq_this_axis) * freq_this_axis
+        ticks_this_axis = np.arange(first_tick, last_tick, freq_this_axis)
         getattr(ax, 'set_{}ticks'.format(dim))(ticks_this_axis)
 
 def run_animation(func_name, fargs, projection='rectilinear', figsize=(7, 7), nb_frames=10, interval=500):   
